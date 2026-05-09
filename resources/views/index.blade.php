@@ -31,12 +31,12 @@
         </h1>
 
         <div class="logo-section">
-            <img src="{{ asset('img/LOGO RPL.jpeg') }}" alt="Logo RPL" class="logo-school">
+            <img src="{{ asset('img/LOGO RPL.png') }}" alt="Logo RPL" class="logo-school">
             <span class="x-separator">✕</span>
             <img src="{{ asset('img/LogoTKJ.png') }}" alt="Logo TKJ" class="logo-school">
         </div>
 
-        <a href="#" class="btn-isi-data">Isi Data Tamu</a>
+        <a href="/guest-form" class="btn-isi-data">Isi Data Tamu</a>
     </div>
 
     <!-- Footer -->
