@@ -52,6 +52,7 @@
 
         <form id="signatureForm" method="POST" action="/submit-guest-data" style="display:none">
             @csrf
+            <input type="hidden" id="fotoBase64" name="foto_base64">
             <input type="hidden" id="ttdBase64" name="tanda_tangan_base64">
         </form>
     </div>
@@ -84,6 +85,19 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
+            // Restore tanda tangan dari sessionStorage
+            const savedTTD = sessionStorage.getItem('savedSignature');
+            if (savedTTD) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0);
+                    hasSignature = true;
+                    updateButtons();
+                    toggleInstruction();
+                };
+                img.src = savedTTD;
+            }
+
             // Mouse events
             canvas.addEventListener('mousedown', (e) => {
                 isDrawing = true;
@@ -107,6 +121,7 @@
 
             canvas.addEventListener('mouseup', () => {
                 isDrawing = false;
+                sessionStorage.setItem('savedSignature', canvas.toDataURL('image/png'));
             });
 
             canvas.addEventListener('mouseleave', () => {
@@ -141,12 +156,14 @@
             canvas.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 isDrawing = false;
+                sessionStorage.setItem('savedSignature', canvas.toDataURL('image/png'));
             });
 
             // Clear button
             clearBtn.addEventListener('click', () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 hasSignature = false;
+                sessionStorage.removeItem('savedSignature');
                 updateButtons();
                 toggleInstruction();
             });
@@ -170,16 +187,42 @@
                 }
             }
 
-            // Skip - submit tanpa tanda tangan
-            skipBtn.addEventListener('click', () => {
-                document.getElementById('ttdBase64').value = '';
+            // Fungsi untuk submit data (foto + signature/atau kosong)
+            function submitAllData(withSignature = false) {
+                const capturedPhoto = sessionStorage.getItem('capturedPhoto');
+                const savedSignature = sessionStorage.getItem('savedSignature');
+
+                if (!capturedPhoto) {
+                    alert('Foto tidak ditemukan. Silakan kembali ke step 2.');
+                    return;
+                }
+
+                // Set foto (wajib)
+                document.getElementById('fotoBase64').value = capturedPhoto;
+
+                // Set tanda tangan (optional)
+                if (withSignature && savedSignature) {
+                    document.getElementById('ttdBase64').value = savedSignature;
+                } else {
+                    document.getElementById('ttdBase64').value = '';
+                }
+
+                // Clear sessionStorage
+                sessionStorage.removeItem('capturedPhoto');
+                sessionStorage.removeItem('savedSignature');
+
+                // Submit form
                 document.getElementById('signatureForm').submit();
+            }
+
+            // Skip - submit tanpa tanda tangan (hanya foto)
+            skipBtn.addEventListener('click', () => {
+                submitAllData(false);
             });
 
             // Submit dengan tanda tangan
             submitBtn.addEventListener('click', () => {
-                document.getElementById('ttdBase64').value = canvas.toDataURL('image/png');
-                document.getElementById('signatureForm').submit();
+                submitAllData(true);
             });
         });
     </script>

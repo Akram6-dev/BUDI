@@ -12,7 +12,6 @@ Route::get('/', function () {
 Route::get('/guest-form',         [TamuController::class, 'form']);
 Route::post('/guest-form',        [TamuController::class, 'storeForm']);
 Route::get('/guest-photo',        [TamuController::class, 'photo']);
-Route::post('/guest-photo',       [TamuController::class, 'storePhoto']);
 Route::get('/guest-signature',    [TamuController::class, 'signature']);
 Route::post('/submit-guest-data', [TamuController::class, 'submit']);
 
@@ -20,7 +19,11 @@ Route::post('/submit-guest-data', [TamuController::class, 'submit']);
 Route::get('/login',           [AdminController::class, 'loginPage']);
 Route::post('/login',          [AdminController::class, 'login']);
 Route::post('/logout',         [AdminController::class, 'logout']);
-Route::get('/admin/dashboard', function () {
-    if (!session('admin_logged_in')) return redirect('/login');
-    return view('admin.dashboard');
-});
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+
+// API Routes for Dashboard
+Route::get('/api/teachers',     [AdminController::class, 'getTeachers']);
+Route::get('/api/students',     [AdminController::class, 'getStudents']);
+Route::get('/api/data/{id}',    [AdminController::class, 'getData']);
+Route::put('/api/data/{id}',    [AdminController::class, 'updateData']);
+Route::delete('/api/data/{id}', [AdminController::class, 'deleteData']);

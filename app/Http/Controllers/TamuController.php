@@ -34,18 +34,6 @@ class TamuController extends Controller
         return view('tamu.guest-photo');
     }
 
-    public function storePhoto(Request $request)
-    {
-        $request->validate([
-            'foto' => 'required|image|max:2048',
-        ]);
-
-        $path = $request->file('foto')->store('foto', 'public');
-        session(['tamu.foto' => $path]);
-
-        return redirect('/guest-signature');
-    }
-
     public function signature()
     {
         return view('tamu.guest-signature');
@@ -53,13 +41,20 @@ class TamuController extends Controller
 
     public function submit(Request $request)
     {
-        // Tanda tangan opsional
+        // Proses foto dari base64
+        $fotoPath = null;
+        if ($request->filled('foto_base64')) {
+            $image = $request->foto_base64;
+            $image = str_replace('data:image/png;base64,', '', $image);
+            $image = base64_decode($image);
+            $filename = 'foto/' . uniqid() . '.png';
+            \Storage::disk('public')->put($filename, $image);
+            $fotoPath = $filename;
+        }
+
+        // Proses tanda tangan dari base64 (opsional)
         $ttdPath = null;
-        if ($request->hasFile('tanda_tangan')) {
-            $request->validate(['tanda_tangan' => 'image|max:2048']);
-            $ttdPath = $request->file('tanda_tangan')->store('tanda_tangan', 'public');
-        } elseif ($request->filled('tanda_tangan_base64')) {
-            // Simpan dari canvas base64
+        if ($request->filled('tanda_tangan_base64')) {
             $image = $request->tanda_tangan_base64;
             $image = str_replace('data:image/png;base64,', '', $image);
             $image = base64_decode($image);
@@ -68,15 +63,16 @@ class TamuController extends Controller
             $ttdPath = $filename;
         }
 
+        // Buat record di database
         Tamu::create([
             'nama'         => session('tamu.nama'),
             'status'       => session('tamu.status'),
             'kelas'        => session('tamu.kelas'),
-            'foto'         => session('tamu.foto', ''),
+            'foto'         => $fotoPath ?? '',
             'tanda_tangan' => $ttdPath ?? '',
         ]);
 
-        session()->forget(['tamu.nama', 'tamu.status', 'tamu.kelas', 'tamu.foto']);
+        session()->forget(['tamu.nama', 'tamu.status', 'tamu.kelas']);
 
         return redirect('/')->with('success', 'Data tamu berhasil disimpan!');
     }

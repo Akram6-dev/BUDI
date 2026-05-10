@@ -59,13 +59,8 @@
 
         <div class="step-actions">
             <a href="/guest-form" class="btn-secondary">Kembali</a>
-            <button type="button" id="nextBtn" class="btn-continue" onclick="submitPhoto()">Selanjutnya</button>
+            <button type="button" id="nextBtn" class="btn-continue" onclick="goToSignature()" disabled style="opacity:0.5;cursor:not-allowed;">Selanjutnya</button>
         </div>
-
-        <form id="photoForm" method="POST" action="/guest-photo" enctype="multipart/form-data" style="display:none">
-            @csrf
-            <input type="file" id="fotoInput" name="foto" accept="image/*">
-        </form>
     </div>
 
     @include('layouts.footer')
@@ -123,7 +118,14 @@
                 }
                 cameraPreview.appendChild(capturedImage);
 
-                // Keep controls visible after photo is taken
+                // Simpan ke sessionStorage
+                sessionStorage.setItem('capturedPhoto', imageData);
+
+                // Aktifkan tombol selanjutnya
+                const nextBtn = document.getElementById('nextBtn');
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
             }
 
             function resetPhoto() {
@@ -132,8 +134,14 @@
                     existingImage.remove();
                 }
                 videoEl.style.display = 'block';
-                // Show controls again
                 cameraControls.classList.remove('hidden');
+                sessionStorage.removeItem('capturedPhoto');
+
+                // Disable tombol selanjutnya lagi
+                const nextBtn = document.getElementById('nextBtn');
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
             }
 
             retryBtn.addEventListener('click', () => {
@@ -151,23 +159,28 @@
 
             startCamera();
 
-            // Submit photo function
-            window.submitPhoto = function() {
+            // Restore foto dari sessionStorage
+            const savedPhoto = sessionStorage.getItem('capturedPhoto');
+            if (savedPhoto) {
+                const capturedImage = document.createElement('img');
+                capturedImage.src = savedPhoto;
+                capturedImage.className = 'captured-photo';
+                videoEl.style.display = 'none';
+                cameraPreview.appendChild(capturedImage);
+                const nextBtn = document.getElementById('nextBtn');
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+
+            // Navigate to signature page (tidak submit ke server)
+            window.goToSignature = function() {
                 const capturedImg = cameraPreview.querySelector('.captured-photo');
                 if (!capturedImg) {
                     alert('Silakan ambil foto terlebih dahulu');
                     return;
                 }
-                // Convert base64 to blob then submit
-                fetch(capturedImg.src)
-                    .then(r => r.blob())
-                    .then(blob => {
-                        const file = new File([blob], 'foto.png', { type: 'image/png' });
-                        const dt = new DataTransfer();
-                        dt.items.add(file);
-                        document.getElementById('fotoInput').files = dt.files;
-                        document.getElementById('photoForm').submit();
-                    });
+                window.location.href = '/guest-signature';
             };
         });
     </script>
