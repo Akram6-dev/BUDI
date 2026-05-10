@@ -20,6 +20,7 @@ Route::get('/login',           [AdminController::class, 'loginPage']);
 Route::post('/login',          [AdminController::class, 'login']);
 Route::post('/logout',         [AdminController::class, 'logout']);
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+Route::get('/admin/export-pdf', [AdminController::class, 'exportPdf']);
 
 // API Routes for Dashboard
 Route::get('/api/teachers',     [AdminController::class, 'getTeachers']);

@@ -16,32 +16,68 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f3f4f6;
+            /* Override global styles from public/css/welcome.css */
+            display: block !important;
+            flex-direction: initial !important;
+            overflow-x: hidden;
         }
 
         .admin-container {
             display: flex;
             min-height: 100vh;
-            flex-direction: column;
+            align-items: stretch;
         }
 
         .admin-navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #ffffff;
+            color: #111827;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
+            /* Override global nav { position: fixed; left:0; right:0 } */
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            width: auto !important;
+            z-index: 1;
         }
 
         .navbar-left {
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .sidebar-toggle:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        .sidebar-toggle svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .admin-container.sidebar-collapsed .sidebar-toggle {
+            display: inline-flex;
         }
 
         .navbar-left img {
@@ -61,43 +97,101 @@
 
         .admin-username {
             font-size: 0.95rem;
+            color: #374151;
         }
 
         .btn-logout {
-            background-color: #ff6b6b;
+            background-color: #ef4444;
             color: white;
-            border: none;
+            border: 1px solid #ef4444;
             padding: 0.6rem 1.5rem;
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s, border-color 0.2s;
         }
 
         .btn-logout:hover {
-            background-color: #ff5252;
-        }
-
-        .admin-content {
-            display: flex;
-            flex: 1;
+            background-color: #dc2626;
+            border-color: #dc2626;
         }
 
         .admin-sidebar {
-            width: 250px;
-            background: linear-gradient(180deg, #2d3436 0%, #636e72 100%);
-            color: white;
-            padding: 2rem 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            width: 260px;
+            background: #f3f4f6;
+            color: #111827;
+            padding: 1.25rem 0;
+            border-right: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: auto;
+            transition: width 0.2s ease;
+        }
+
+        .admin-container.sidebar-collapsed .admin-sidebar {
+            width: 0;
+            padding: 0;
+            border-right: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .admin-container.sidebar-collapsed .sidebar-title,
+        .admin-container.sidebar-collapsed .sidebar-btn span,
+        .admin-container.sidebar-collapsed .btn-export span {
+            display: none;
+        }
+
+        .admin-container.sidebar-collapsed .sidebar-btn {
+            justify-content: center;
+            padding: 0.9rem 0.75rem;
+        }
+
+        .admin-container.sidebar-collapsed .btn-export {
+            justify-content: center;
+            padding: 0.8rem 0.75rem;
+        }
+
+        .admin-container.sidebar-collapsed .admin-main {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
         }
 
         .sidebar-title {
-            padding: 0 1.5rem;
+            padding: 0 1rem;
             font-size: 1.2rem;
             font-weight: bold;
             margin-bottom: 2rem;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid #e5e7eb;
             padding-bottom: 1rem;
+            color: #111827;
+        }
+
+        .sidebar-title-btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font-size: inherit;
+            font-weight: inherit;
+            text-align: left;
+        }
+
+        .sidebar-title-btn:hover {
+            background: #ffffff;
+            border-color: #e5e7eb;
+        }
+
+        .sidebar-title-btn:active {
+            transform: translateY(0.5px);
         }
 
         .sidebar-menu {
@@ -109,51 +203,72 @@
         }
 
         .sidebar-btn {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            background: #ffffff;
+            color: #111827;
             border: none;
             padding: 1rem 1.5rem;
             border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background-color 0.2s, box-shadow 0.2s;
             font-size: 0.95rem;
             font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.75rem;
+            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
+            border: 1px solid #e5e7eb;
         }
 
         .sidebar-btn:hover {
-            background: rgba(255,255,255,0.2);
+            background: #f9fafb;
         }
 
         .sidebar-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #111827;
+            color: #ffffff;
+            border-color: #111827;
         }
 
         .sidebar-export {
             margin-top: auto;
             padding: 1rem;
-            border-top: 1px solid rgba(255,255,255,0.2);
+            border-top: 1px solid #e5e7eb;
         }
 
         .btn-export {
             width: 100%;
-            background: #27ae60;
-            color: white;
-            border: none;
+            background: #2563eb;
+            color: #ffffff;
+            border: 1px solid #2563eb;
             padding: 0.8rem;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s, border-color 0.2s;
             font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn-export:hover {
-            background: #229954;
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .admin-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
         }
 
         .admin-main {
             flex: 1;
             padding: 2rem;
             overflow-y: auto;
+            background: #ffffff;
         }
 
         .section {
@@ -169,8 +284,27 @@
             font-weight: bold;
             color: #2d3436;
             margin-bottom: 2rem;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #e5e7eb;
             padding-bottom: 1rem;
+        }
+
+        .summary-and-filters {
+            display: flex;
+            gap: 1rem;
+            align-items: stretch;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-and-filters .count-box {
+            flex: 0 0 260px;
+            min-width: 240px;
+            margin-bottom: 0;
+        }
+
+        .summary-and-filters .filter-group {
+            flex: 1;
+            margin-bottom: 0;
         }
 
         .filter-group {
@@ -178,10 +312,11 @@
             padding: 1.5rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            border: 1px solid #e5e7eb;
         }
 
         .filter-item {
@@ -206,31 +341,35 @@
         }
 
         .count-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #ffffff;
+            color: #111827;
             padding: 1.5rem;
             border-radius: 8px;
             margin-bottom: 2rem;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
+            border: 1px solid #e5e7eb;
         }
 
         .count-box h3 {
             font-size: 0.95rem;
-            opacity: 0.9;
+            opacity: 0.85;
             margin-bottom: 0.5rem;
+            color: #374151;
         }
 
         .count-box .number {
             font-size: 2.5rem;
             font-weight: bold;
+            color: #111827;
         }
 
         .table-wrapper {
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
+            border: 1px solid #e5e7eb;
         }
 
         table {
@@ -473,44 +612,60 @@
         }
 
         .admin-footer {
-            background: #2d3436;
-            color: #bdc3c7;
+            background: #ffffff;
+            color: #6b7280;
             text-align: center;
             padding: 1.5rem;
             font-size: 0.85rem;
-            border-top: 1px solid #1e2126;
+            border-top: 1px solid #e5e7eb;
+            /* Override global footer styles */
+            position: relative !important;
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
-        <!-- Navbar -->
-        <nav class="admin-navbar">
-            <div class="navbar-left">
-                <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang">
-                <span>PAMERAN TKI - ADMIN</span>
+    <div class="admin-container" id="adminContainer">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" aria-label="Sidebar">
+            <div class="sidebar-title">
+                <button type="button" class="sidebar-title-btn" onclick="collapseSidebar()" title="Kecilkan sidebar">
+                    Dashboard Admin
+                </button>
             </div>
-            <div class="navbar-right">
-                <span class="admin-username">{{ session('admin_username') }}</span>
-                <form action="/logout" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn-logout">Logout</button>
-                </form>
+            <div class="sidebar-menu">
+                <button class="sidebar-btn active" onclick="switchSection('teacher', event)">
+                    <span>Teacher</span>
+                </button>
+                <button class="sidebar-btn" onclick="switchSection('student', event)">
+                    <span>Student</span>
+                </button>
             </div>
-        </nav>
+            <div class="sidebar-export">
+                <button class="btn-export" onclick="exportData()">
+                    <span>Export Data</span>
+                </button>
+            </div>
+        </aside>
 
         <div class="admin-content">
-            <!-- Sidebar -->
-            <aside class="admin-sidebar">
-                <div class="sidebar-title">Dashboard Admin</div>
-                <div class="sidebar-menu">
-                    <button class="sidebar-btn active" onclick="switchSection('teacher')">Teacher</button>
-                    <button class="sidebar-btn" onclick="switchSection('student')">Student</button>
+            <!-- Navbar (only for content area width) -->
+            <nav class="admin-navbar">
+                <div class="navbar-left">
+                    <button type="button" class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Buka sidebar" title="Buka sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M4 6H20M4 12H20M4 18H20" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang">
+                    <span>PAMERAN TKI - ADMIN</span>
                 </div>
-                <div class="sidebar-export">
-                    <button class="btn-export" onclick="exportData()">Export Data</button>
+                <div class="navbar-right">
+                    <form action="/logout" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn-logout">Logout</button>
+                    </form>
                 </div>
-            </aside>
+            </nav>
 
             <!-- Main Content -->
             <main class="admin-main">
@@ -518,16 +673,18 @@
                 <section id="teacher" class="section active">
                     <h1 class="section-title">KEHADIRAN GURU</h1>
 
-                    <div class="filter-group">
-                        <div class="filter-item">
-                            <label class="filter-label">Cari Nama Guru</label>
-                            <input type="text" class="filter-input" id="teacher-search" placeholder="Masukkan nama guru">
+                    <div class="summary-and-filters">
+                        <div class="count-box">
+                            <h3>Total Guru</h3>
+                            <div class="number" id="teacher-count">0</div>
                         </div>
-                    </div>
 
-                    <div class="count-box">
-                        <h3>Total Guru</h3>
-                        <div class="number" id="teacher-count">0</div>
+                        <div class="filter-group">
+                            <div class="filter-item">
+                                <label class="filter-label">Cari Nama Guru</label>
+                                <input type="text" class="filter-input" id="teacher-search" placeholder="Masukkan nama guru">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="table-wrapper">
@@ -550,20 +707,22 @@
                 <section id="student" class="section">
                     <h1 class="section-title">KEHADIRAN SISWA</h1>
 
-                    <div class="filter-group">
-                        <div class="filter-item">
-                            <label class="filter-label">Cari Nama Siswa</label>
-                            <input type="text" class="filter-input" id="student-search-nama" placeholder="Masukkan nama siswa">
+                    <div class="summary-and-filters">
+                        <div class="count-box">
+                            <h3>Total Siswa</h3>
+                            <div class="number" id="student-count">0</div>
                         </div>
-                        <div class="filter-item">
-                            <label class="filter-label">Cari Kelas</label>
-                            <input type="text" class="filter-input" id="student-search-kelas" placeholder="Masukkan kelas">
-                        </div>
-                    </div>
 
-                    <div class="count-box">
-                        <h3>Total Siswa</h3>
-                        <div class="number" id="student-count">0</div>
+                        <div class="filter-group">
+                            <div class="filter-item">
+                                <label class="filter-label">Cari Nama Siswa</label>
+                                <input type="text" class="filter-input" id="student-search-nama" placeholder="Masukkan nama siswa">
+                            </div>
+                            <div class="filter-item">
+                                <label class="filter-label">Cari Kelas</label>
+                                <input type="text" class="filter-input" id="student-search-kelas" placeholder="Masukkan kelas">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="table-wrapper">
@@ -583,12 +742,12 @@
                     </div>
                 </section>
             </main>
-        </div>
 
-        <!-- Footer -->
-        <footer class="admin-footer">
-            <p>&copy; 2026 SMKN 1 Subang - Pameran TKI. All rights reserved.</p>
-        </footer>
+            <!-- Footer (only for content area width) -->
+            <footer class="admin-footer">
+                <p>&copy; 2026 SMKN 1 Subang - Pameran TKI. All rights reserved.</p>
+            </footer>
+        </div>
     </div>
 
     <!-- Preview Modal -->
@@ -654,17 +813,38 @@
         let currentSection = 'teacher';
 
         // Switch between sections
-        function switchSection(section) {
+        function switchSection(section, evt) {
             currentSection = section;
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(section).classList.add('active');
             document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            const targetBtn = evt?.currentTarget || evt?.target;
+            if (targetBtn) targetBtn.classList.add('active');
 
             if (section === 'teacher') {
                 loadTeachers();
             } else {
                 loadStudents();
+            }
+        }
+
+        function toggleSidebar() {
+            const container = document.getElementById('adminContainer');
+            if (!container) return;
+            container.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('adminSidebarCollapsed', container.classList.contains('sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
+        }
+
+        function collapseSidebar() {
+            const container = document.getElementById('adminContainer');
+            if (!container) return;
+            if (!container.classList.contains('sidebar-collapsed')) {
+                container.classList.add('sidebar-collapsed');
+                try {
+                    localStorage.setItem('adminSidebarCollapsed', '1');
+                } catch (e) {}
             }
         }
 
@@ -872,11 +1052,29 @@
 
         // Export data
         function exportData() {
-            alert('Fitur export akan segera hadir');
+            const params = new URLSearchParams();
+            params.set('section', currentSection);
+
+            if (currentSection === 'teacher') {
+                const search = document.getElementById('teacher-search')?.value || '';
+                if (search) params.set('search', search);
+            } else {
+                const searchNama = document.getElementById('student-search-nama')?.value || '';
+                const searchKelas = document.getElementById('student-search-kelas')?.value || '';
+                if (searchNama) params.set('search_nama', searchNama);
+                if (searchKelas) params.set('search_kelas', searchKelas);
+            }
+
+            window.location.href = `/admin/export-pdf?${params.toString()}`;
         }
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const collapsed = localStorage.getItem('adminSidebarCollapsed') === '1';
+                if (collapsed) document.getElementById('adminContainer')?.classList.add('sidebar-collapsed');
+            } catch (e) {}
+
             loadTeachers();
 
             document.getElementById('teacher-search').addEventListener('keyup', loadTeachers);

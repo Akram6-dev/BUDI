@@ -7,6 +7,7 @@ use App\Models\Tamu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -140,5 +141,82 @@ class AdminController extends Controller
         $tamu->delete();
 
         return response()->json(['success' => true, 'message' => 'Data berhasil dihapus']);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        if (!Session::get('admin_logged_in')) {
+            return redirect('/login');
+        }
+
+        $section = $request->get('section', 'teacher');
+        $isStudent = $section === 'student';
+
+        $query = Tamu::query()->where('status', $isStudent ? 'siswa' : 'guru');
+
+        if ($isStudent) {
+            if ($request->filled('search_nama')) {
+                $query->where('nama', 'like', '%' . $request->search_nama . '%');
+            }
+            if ($request->filled('search_kelas')) {
+                $query->where('kelas', 'like', '%' . $request->search_kelas . '%');
+            }
+        } else {
+            if ($request->filled('search')) {
+                $query->where('nama', 'like', '%' . $request->search . '%');
+            }
+        }
+
+        $items = $query->orderBy('created_at', 'desc')->get();
+
+        $whitePngDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO9WlWcAAAAASUVORK5CYII=';
+        $toDataUri = function (?string $relativePath) use ($whitePngDataUri): string {
+            if (!$relativePath) {
+                return $whitePngDataUri;
+            }
+
+            $relativePath = ltrim($relativePath, '/');
+            $fullPath = storage_path('app/public/' . $relativePath);
+            if (!is_file($fullPath)) {
+                return $whitePngDataUri;
+            }
+
+            $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+            $mime = match ($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'webp' => 'image/webp',
+                'gif' => 'image/gif',
+                default => 'image/png',
+            };
+
+            $data = base64_encode((string) file_get_contents($fullPath));
+            return "data:$mime;base64,$data";
+        };
+
+        $rows = $items->values()->map(function ($item, $index) use ($toDataUri, $whitePngDataUri) {
+            $signaturePath = ($item->tanda_tangan ?? '') !== '' ? $item->tanda_tangan : null;
+
+            return [
+                'no' => $index + 1,
+                'nama' => $item->nama,
+                'kelas' => $item->kelas,
+                'status' => $item->status,
+                'foto_data_uri' => $toDataUri(($item->foto ?? '') !== '' ? $item->foto : null),
+                'ttd_data_uri' => $signaturePath ? $toDataUri($signaturePath) : $whitePngDataUri,
+            ];
+        });
+
+        $pdf = Pdf::loadView('admin.export-pdf', [
+            'title' => 'DAFTAR KEHADIRAN',
+            'section' => $section,
+            'rows' => $rows,
+            'generatedAt' => now(),
+        ])->setPaper('a4', 'landscape');
+
+        $filename = $section === 'student'
+            ? 'daftar-kehadiran-siswa.pdf'
+            : 'daftar-kehadiran-guru.pdf';
+
+        return $pdf->download($filename);
     }
 }
