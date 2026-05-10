@@ -8,6 +8,30 @@
 </head>
 <body>
 
+    <!-- Success Alert -->
+    @if(session('success'))
+    <div id="successAlert" style="
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.75);
+        color: #FFB800;
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        z-index: 999;
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255,184,0,0.4);
+    ">✓ {{ session('success') }}</div>
+    <script>
+        setTimeout(() => {
+            document.getElementById('successAlert').style.display = 'none';
+        }, 4000);
+    </script>
+    @endif
+
     <!-- Background -->
     <div class="slider-wrapper">
         <div class="slide"></div>

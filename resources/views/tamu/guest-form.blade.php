@@ -7,22 +7,15 @@
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/guest-form.css') }}">
 </head>
-<body>
+<body class="guest-form-body">
 
-    <!-- Navbar -->
-    <nav class="navbar-form">
-        <div class="nav-left">
-            <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo Nesasa" class="nav-logo">
-            <span class="nav-title">PAMERAN TKI</span>
-        </div>
-        <a href="/login" class="btn-login">Login Admin</a>
-    </nav>
+    @include('layouts.navbar')
 
     <!-- Main Content -->
     <div class="main-content-form">
         <!-- Step Indicator -->
         <div class="step-container">
-            <h2 class="step-title">Step 1 of 3</h2>
+            <h1 class="step-title">Step 1 of 3</h1>
             
             <!-- Progress Bar -->
             <div class="progress-wrapper">
@@ -36,9 +29,9 @@
 
         <!-- Form Card -->
         <div class="form-card">
-            <h3 class="form-card-title">Isi Identitas Anda</h3>
+            <h1 class="form-card-title">Isi Identitas Anda</h1>
 
-            <form id="guestForm" method="POST" action="/submit-guest-data">
+            <form id="guestForm" method="POST" action="/guest-form">
                 @csrf
 
                 <!-- Full Name Input -->
@@ -50,6 +43,7 @@
                         name="full_name" 
                         class="form-input" 
                         placeholder="Masukkan nama lengkap Anda"
+                        value="{{ session('tamu.nama') }}"
                         required
                     >
                 </div>
@@ -64,6 +58,7 @@
                         class="form-input"
                         placeholder="Pilih atau ketik kelas Anda"
                         list="classList"
+                        value="{{ session('tamu.kelas') }}"
                     >
                     <datalist id="classList">
                         <option value="X PPLG 1"></option>
@@ -105,13 +100,14 @@
                     <button type="submit" class="btn-continue">Lanjutkan</button>
                 </div>
             </form>
+
+            <div class="photo-notice">
+                <span class="warning-icon">!</span> Data anda akan diproses secara aman untuk keperluan pameran saja.
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer-form">
-        © 2024 PAMERAN TKI - SMKN 1 SUBANG
-    </footer>
+    @include('layouts.footer')
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -120,34 +116,42 @@
             const classGroup = document.getElementById('classGroup');
             const classSelect = document.getElementById('classSelect');
 
+            // Restore session state
+            const savedStatus = '{{ session('tamu.status') }}';
+            if (savedStatus) {
+                const savedCard = document.querySelector(`[data-status="${savedStatus === 'siswa' ? 'murid' : savedStatus}"]`);
+                if (savedCard) {
+                    savedCard.classList.add('active');
+                    statusInput.value = savedStatus === 'siswa' ? 'murid' : savedStatus;
+                    if (savedStatus === 'siswa') {
+                        classGroup.style.display = 'block';
+                        classSelect.required = true;
+                    }
+                }
+            }
+
             statusCards.forEach(card => {
                 card.addEventListener('click', function() {
-                    // Remove active class from all cards
                     statusCards.forEach(c => c.classList.remove('active'));
-                    
-                    // Add active class to clicked card
                     this.classList.add('active');
-                    
-                    // Set the status value
+
                     const status = this.getAttribute('data-status');
                     statusInput.value = status;
 
-                    // Show class selection if Murid is selected
                     if (status === 'murid') {
                         classGroup.style.display = 'block';
                         classSelect.required = true;
                     } else {
                         classGroup.style.display = 'none';
                         classSelect.required = false;
-                        classSelect.value = '';
+                        classSelect.value = ''; // auto clear kelas
                     }
                 });
             });
 
-            // Form submission
             document.getElementById('guestForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 if (statusInput.value === '') {
                     alert('Silahkan pilih status terlebih dahulu');
                     return;
@@ -158,13 +162,7 @@
                     return;
                 }
 
-                // If validation passes, submit the form
-                // this.submit();
-                console.log({
-                    full_name: document.getElementById('fullName').value,
-                    status: statusInput.value,
-                    class: classSelect.value
-                });
+                this.submit();
             });
         });
     </script>
