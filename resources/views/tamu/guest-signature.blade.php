@@ -9,6 +9,7 @@
 </head>
 <body class="guest-form-body">
 
+    @include('layouts.ai-bg')
     @include('layouts.navbar')
 
     <div class="main-content-form">
@@ -189,6 +190,7 @@
 
             // Fungsi untuk submit data (foto + signature/atau kosong)
             function submitAllData(withSignature = false) {
+                cancelAnimationFrame(window._aiBgRaf);
                 const capturedPhoto = sessionStorage.getItem('capturedPhoto');
                 const savedSignature = sessionStorage.getItem('savedSignature');
 

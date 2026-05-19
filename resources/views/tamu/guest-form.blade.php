@@ -9,6 +9,7 @@
 </head>
 <body class="guest-form-body">
 
+    @include('layouts.ai-bg')
     @include('layouts.navbar')
 
     <!-- Main Content -->
@@ -162,6 +163,7 @@
                     return;
                 }
 
+                cancelAnimationFrame(window._aiBgRaf);
                 this.submit();
             });
         });

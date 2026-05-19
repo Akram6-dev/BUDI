@@ -9,6 +9,7 @@
 </head>
 <body class="guest-form-body">
 
+    @include('layouts.ai-bg')
     @include('layouts.navbar')
 
     <div class="main-content-form">
@@ -180,6 +181,8 @@
                     alert('Silakan ambil foto terlebih dahulu');
                     return;
                 }
+                cancelAnimationFrame(window._aiBgRaf);
+                if (stream) stream.getTracks().forEach(t => t.stop());
                 window.location.href = '/guest-signature';
             };
         });

@@ -1,0 +1,17 @@
+/* AI Circuit Background */
+#ai-bg { position: fixed; inset: 0; z-index: 0; cursor: crosshair; background: #020810; }
+#ai-bg canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+
+/* HUD */
+#hud { position: fixed; inset: 0; pointer-events: none; font-family: 'Courier New', monospace; z-index: 1; }
+.hp { position: absolute; font-size: clamp(8px,.68vw,10.5px); letter-spacing: .13em; line-height: 2; opacity: .5; color: #0c4d7a; }
+#ht { top: clamp(18px,2.4vh,30px); left: clamp(20px,2.4vw,34px); text-shadow: 0 0 10px rgba(0,120,240,.2); }
+#ht .logo { font-size: clamp(9px,.76vw,11.5px); color: #0a72a8; letter-spacing: .20em; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+#ht .d { width: 4px; height: 4px; border-radius: 50%; background: #009dcc; box-shadow: 0 0 5px #009dcc; animation: blink 2.6s ease-in-out infinite; }
+#ht .v { color: #009dcc; }
+#hr { top: clamp(18px,2.4vh,30px); right: clamp(20px,2.4vw,34px); text-align: right; color: #093858; }
+#hr .v { color: #0074a0; }
+#hb { bottom: clamp(18px,2.4vh,30px); left: clamp(20px,2.4vw,34px); color: #062840; opacity: .36; }
+#hbr { bottom: clamp(18px,2.4vh,30px); right: clamp(20px,2.4vw,34px); text-align: right; color: #062840; opacity: .38; }
+#hbr .v { color: #005f7e; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.1} }

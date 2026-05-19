@@ -9,6 +9,8 @@
 </head>
 <body class="guest-form-body">
 
+    @include('layouts.ai-bg')
+
     <nav class="navbar-form">
         <div class="nav-left">
             <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang" class="nav-logo">

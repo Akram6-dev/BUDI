@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Circuit OS</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#020810}
+#c{position:fixed;inset:0;cursor:crosshair}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+
+/* HUD — minimal, elegant */
+#hud{position:fixed;inset:0;pointer-events:none;font-family:'Courier New',monospace}
+.hp{position:absolute;font-size:clamp(8px,.68vw,10.5px);letter-spacing:.13em;line-height:2;opacity:.5;color:#0c4d7a}
+#ht{top:clamp(18px,2.4vh,30px);left:clamp(20px,2.4vw,34px);text-shadow:0 0 10px rgba(0,120,240,.2)}
+#ht .logo{font-size:clamp(9px,.76vw,11.5px);color:#0a72a8;letter-spacing:.20em;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+#ht .d{width:4px;height:4px;border-radius:50%;background:#009dcc;box-shadow:0 0 5px #009dcc;animation:blink 2.6s ease-in-out infinite}
+#ht .v{color:#009dcc}
+#hr{top:clamp(18px,2.4vh,30px);right:clamp(20px,2.4vw,34px);text-align:right;color:#093858}
+#hr .v{color:#0074a0}
+#hb{bottom:clamp(18px,2.4vh,30px);left:clamp(20px,2.4vw,34px);color:#062840;opacity:.36}
+#hbr{bottom:clamp(18px,2.4vh,30px);right:clamp(20px,2.4vw,34px);text-align:right;color:#062840;opacity:.38}
+#hbr .v{color:#005f7e}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+</style>
+</head>
+<body>
+<div id="c">
+  <!-- Layer 1: static bg + hex (never cleared mid-frame) -->
+  <canvas id="cBg"></canvas>
+  <!-- Layer 2: circuits + signals (cleared each frame) -->
+  <canvas id="cNet"></canvas>
+  <!-- Layer 3: cores + fx (cleared each frame, higher parallax) -->
+  <canvas id="cFx"></canvas>
+</div>
+
+<div id="hud">
+  <div class="hp" id="ht">
+    <div class="logo"><span class="d"></span>AI_OS · v7.0</div>
+    <div>SYS&nbsp;&nbsp;<span class="v" id="hSt">ACTIVE</span></div>
+    <div>SIG&nbsp;&nbsp;<span class="v" id="hSg">0</span></div>
+    <div>NOD&nbsp;&nbsp;<span class="v" id="hNd">0</span></div>
+    <div>UP&nbsp;&nbsp;&nbsp;<span class="v" id="hUp">00:00</span></div>
+  </div>
+  <div class="hp" id="hr">
+    <div>GRID&nbsp;<span class="v" id="hGr">--</span></div>
+    <div>LOAD&nbsp;<span class="v" id="hLd">--</span>%</div>
+    <div>CORES&nbsp;<span class="v" id="hCo">--</span></div>
+    <div>ENC&nbsp;&nbsp;<span class="v">AES-256</span></div>
+  </div>
+  <div class="hp" id="hb">
+    <div>◈ IOT CONTROL CENTER</div>
+    <div>PING <span id="hPi">--</span>ms</div>
+  </div>
+  <div class="hp" id="hbr">
+    <div><span class="v" id="hBr">□□□□□□□□</span></div>
+    <div>192.168.0.1</div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ════════════════════════════════
+   SETUP
+════════════════════════════════ */
+const wrap  = document.getElementById('c');
+const cBg   = document.getElementById('cBg');
+const cNet  = document.getElementById('cNet');
+const cFx   = document.getElementById('cFx');
+let gBg, gNet, gFx;
+let W = 0, H = 0;
+
+/* ════════════════════════════════
+   WORLD STATE
+════════════════════════════════ */
+// Grid
+let COLS=0, ROWS=0, CW=0, CH=0;
+let nodes = [], segs = [];
+
+// Cores — pre-allocated arrays
+let hubs = [];       // 5 energy hubs
+let sats = [];       // satellite mini-rings
+let conns = [];      // hub connection pairs (deduplicated)
+
+// Live objects — kept small by caps
+const CAP_SIG  = 8;
+const CAP_SYNC = 2;
+const CAP_PART = 24;
+const CAP_RIP  = 3;
+const CAP_ORB  = 7;
+let signals    = [];
+let syncs      = [];
+let particles  = [];
+let ripples    = [];
+let orbs       = [];   // energy spheres navigating circuit intersections
+let orbGraph   = {};   // "col,row" -> [{col,row,seg}] adjacency list
+
+// Timing / rhythm
+let frame      = 0;
+let t0         = Date.now();
+let raf        = 0;
+
+// Activity system — calm waves
+let activity   = 0.85;
+let actTarget  = 0.85;
+let wave       = 0;        // 0..1 global sine
+let hubClock   = 0;        // accumulates for hub pulse trigger
+let bgDirty    = true;
+
+// Interaction
+let mouse = {x:-1e5, y:-1e5};
+let plx   = {x:0, y:0, tx:0, ty:0};
+
+// HUD counters
+let activeNodes = 0;
+
+/* ════════════════════════════════
+   RESIZE
+════════════════════════════════ */
+function onResize(){
+  W = wrap.clientWidth  || window.innerWidth;
+  H = wrap.clientHeight || window.innerHeight;
+  [cBg, cNet, cFx].forEach(c => { c.width = W; c.height = H; });
+  gBg  = cBg.getContext('2d');
+  gNet = cNet.getContext('2d');
+  gFx  = cFx.getContext('2d');
+  bgDirty = true;
+  rebuild();
+}
+
+/* ════════════════════════════════
+   REBUILD WORLD
+════════════════════════════════ */
+function rebuild(){
+  /* Spacing: wider = cleaner, less clutter */
+  const sp = Math.round(clamp(W / 18, 52, 88));
+  COLS = Math.ceil(W / sp) + 1;
+  ROWS = Math.ceil(H / sp) + 1;
+  CW = W / (COLS - 1);
+  CH = H / (ROWS - 1);
+
+  /* ── 5 Hubs: 1 primary center, 4 secondary corners ── */
+  const hDefs = [
+    {fx:.500, fy:.475, primary:true,  label:'Ω'},
+    {fx:.175, fy:.195, primary:false, label:'A'},
+    {fx:.825, fy:.195, primary:false, label:'B'},
+    {fx:.175, fy:.790, primary:false, label:'C'},
+    {fx:.825, fy:.790, primary:false, label:'D'},
+  ];
+  hubs = hDefs.map((d, i) => {
+    const R   = d.primary ? Math.min(W,H)*.072 : Math.min(W,H)*.046;
+    const dir = i % 2 === 0 ? 1 : -1;
+    return {
+      id:i, fx:d.fx, fy:d.fy, label:d.label, primary:d.primary,
+      x: W*d.fx, y: H*d.fy, R,
+      /* 4 concentric rings, counter-alternating */
+      rings: [
+        {r:R,      ph:Math.random()*6.28, spd: .0028*dir, arc:.48},
+        {r:R*.75,  ph:Math.random()*6.28, spd:-.0044*dir, arc:.36},
+        {r:R*.53,  ph:Math.random()*6.28, spd: .0062*dir, arc:.26},
+        {r:R*.34,  ph:Math.random()*6.28, spd:-.0088*dir, arc:.18},
+      ],
+      pw:   0,   // sinusoidal pulse [0-1]
+      pwPh: Math.random()*6.28,
+      glow: 0,   // reactive glow [0-1], decays
+      conns: i===0?[1,2,3,4]:i===1?[0,2,3]:i===2?[0,1,4]:i===3?[0,1,4]:[0,2,3],
+      feedSegs: [],
+      orbitN: d.primary ? 6 : 4,
+    };
+  });
+
+  /* Connection lines (no duplicates) */
+  const seen = new Set();
+  conns = [];
+  hubs.forEach(h => h.conns.forEach(tid => {
+    const key = Math.min(h.id,tid)+'-'+Math.max(h.id,tid);
+    if (seen.has(key)) return;
+    seen.add(key);
+    conns.push({a: h, b: hubs[tid]});
+  }));
+
+  /* ── Satellite mini-cores: 2 per hub ── */
+  sats = [];
+  hubs.forEach((hub, hi) => {
+    const count = hub.primary ? 3 : 2;
+    for (let s = 0; s < count; s++) {
+      const ang  = (6.283 / count) * s + 0.4 + hub.rings[0].ph;
+      const dist = hub.R * (2.5 + Math.random() * .7);
+      const sx   = clamp(hub.x + Math.cos(ang)*dist, W*.07, W*.93);
+      const sy   = clamp(hub.y + Math.sin(ang)*dist, H*.07, H*.93);
+      const sr   = hub.R * (.16 + Math.random()*.09);
+      const sd   = s%2===0 ? 1 : -1;
+      sats.push({
+        pid:hi, x:sx, y:sy, R:sr,
+        ph:  Math.random()*6.28, spd: (.010+Math.random()*.007)*sd, arc:.40,
+        iPh: Math.random()*6.28, iSpd:(-.013+Math.random()*.008)*sd, iArc:.22,
+        pw:0, pwPh:Math.random()*6.28, glow:0,
+      });
+    }
+  });
+
+  /* ── Nodes ── */
+  nodes = [];
+  for (let r = 0; r < ROWS; r++) {
+    nodes[r] = [];
+    for (let c = 0; c < COLS; c++) {
+      const nx = c*CW, ny = r*CH;
+      let minD = Infinity;
+      hubs.forEach(h => { minD = Math.min(minD, Math.hypot(h.x-nx, h.y-ny)); });
+      const inf = clamp(1 - minD/(Math.min(W,H)*.36), 0, 1);
+      nodes[r][c] = {
+        x:nx, y:ny, glow:0,
+        isNode: Math.random() < (.09 + inf*.14),
+        bLum:   .016 + Math.random()*.058 + inf*.044,
+        inf,
+      };
+    }
+  }
+
+  /* ── Segments ── */
+  segs = [];
+  function mkSegs(isH) {
+    const oMax = isH ? ROWS : COLS;
+    const iMax = isH ? COLS : ROWS;
+    for (let a = 0; a < oMax; a++) {
+      let b = 0;
+      while (b < iMax-1) {
+        if (Math.random() < .60) {
+          const len = 1 + Math.floor(Math.random()*5);
+          const end = Math.min(b+len, iMax-1);
+          const mx  = isH ? (b+end)*.5*CW : a*CW;
+          const my  = isH ? a*CH           : (b+end)*.5*CH;
+          let maxInf = 0;
+          hubs.forEach(h => {
+            maxInf = Math.max(maxInf, clamp(1-Math.hypot(h.x-mx,h.y-my)/(Math.min(W,H)*.38),0,1));
+          });
+          segs.push({
+            isH, a, b0:b, b1:end,
+            glow:0,
+            bLum: .016 + Math.random()*.068 + maxInf*.052,
+            bg:   Math.random(),   // brightness group [0-1]
+            inf:  maxInf,
+          });
+          b = end;
+        } else b++;
+      }
+    }
+  }
+  mkSegs(true); mkSegs(false);
+
+  /* Assign feed segs to hubs */
+  hubs.forEach(hub => {
+    hub.feedSegs = segs.filter(s => {
+      const co = segCoords(s);
+      return Math.min(
+        Math.hypot(hub.x-co.x1, hub.y-co.y1),
+        Math.hypot(hub.x-co.x2, hub.y-co.y2)
+      ) < hub.R * 2.8;
+    });
+  });
+
+  /* ── Orb intersection graph ──
+     For every segment, register its two endpoint grid intersections
+     and record which neighbours can be reached from each endpoint.
+     Key format: "col,row" for H-segs; for V-segs same convention.
+  */
+  orbGraph = {};
+  function gKey(col, row) { return col + ',' + row; }
+  function gAdd(col, row, nb) {
+    const k = gKey(col, row);
+    if (!orbGraph[k]) orbGraph[k] = { col, row, nbrs: [] };
+    orbGraph[k].nbrs.push(nb);
+  }
+  segs.forEach(s => {
+    if (s.isH) {
+      // endpoint A = (b0, a), endpoint B = (b1, a)
+      gAdd(s.b0, s.a, { col:s.b1, row:s.a, seg:s, dir:1  });
+      gAdd(s.b1, s.a, { col:s.b0, row:s.a, seg:s, dir:-1 });
+    } else {
+      // endpoint A = (a, b0), endpoint B = (a, b1)
+      gAdd(s.a, s.b0, { col:s.a, row:s.b1, seg:s, dir:1  });
+      gAdd(s.a, s.b1, { col:s.a, row:s.b0, seg:s, dir:-1 });
+    }
+  });
+
+  signals   = [];
+  syncs     = [];
+  particles = [];
+  ripples   = [];
+  orbs      = [];
+  /* Seed a handful of signals quietly */
+  for (let i = 0; i < 5; i++) spawnSig();
+  /* Seed initial orbs — staggered so they don't all appear at once */
+  setTimeout(() => spawnOrb(), 600);
+  setTimeout(() => spawnOrb(), 1400);
+  setTimeout(() => spawnOrb(), 2400);
+}
+
+/* ════════════════════════════════
+   STATIC BACKGROUND (drawn once)
+════════════════════════════════ */
+function drawBg() {
+  gBg.clearRect(0, 0, W, H);
+
+  /* Deep navy gradient */
+  const bg = gBg.createRadialGradient(W*.5, H*.44, 0, W*.5, H*.44, Math.max(W,H)*.95);
+  bg.addColorStop(0,  '#0b1a2e');
+  bg.addColorStop(.55,'#060d1a');
+  bg.addColorStop(1,  '#020609');
+  gBg.fillStyle = bg;
+  gBg.fillRect(0, 0, W, H);
+
+  /* Subtle ambient glows centred on hubs */
+  hubs.forEach((h, i) => {
+    const r = Math.min(W,H) * (i===0 ? .40 : .26);
+    const a = i===0 ? .042 : .024;
+    rglow(gBg, h.x, h.y, r, `rgba(0,68,162,${a})`, 'rgba(0,14,68,0)');
+  });
+
+  /* Hexagon lattice — extremely faint, static */
+  const hSz = Math.min(W,H) * .040;
+  const hW  = hSz * 1.732, hH = hSz * 2;
+  gBg.strokeStyle = 'rgba(0,88,188,.007)';
+  gBg.lineWidth   = .3;
+  for (let row = -1; row < Math.ceil(H/(hH*.75))+2; row++) {
+    for (let col = -1; col < Math.ceil(W/hW)+2; col++) {
+      const hx = col*hW + (row%2 ? hW*.5 : 0);
+      const hy = row*hH*.75;
+      gBg.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI/3)*i - Math.PI/6;
+        const px = hx + hSz*Math.cos(a), py = hy + hSz*Math.sin(a);
+        i ? gBg.lineTo(px,py) : gBg.moveTo(px,py);
+      }
+      gBg.closePath();
+      gBg.stroke();
+    }
+  }
+
+  bgDirty = false;
+}
+
+/* ════════════════════════════════
+   HELPERS
+════════════════════════════════ */
+function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+function segCoords(s) {
+  if (s.isH) return { x1:s.b0*CW, y1:s.a*CH, x2:s.b1*CW, y2:s.a*CH, mx:(s.b0+s.b1)*.5*CW, my:s.a*CH };
+  return { x1:s.a*CW, y1:s.b0*CH, x2:s.a*CW, y2:s.b1*CH, mx:s.a*CW, my:(s.b0+s.b1)*.5*CH };
+}
+
+function rglow(ctx, cx, cy, r, cA, cB) {
+  if (r <= 0) return;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g.addColorStop(0, cA); g.addColorStop(1, cB);
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = g; ctx.fill();
+}
+
+/* Rotating arc with gradient and head glow */
+function rarc(ctx, cx, cy, r, ph, arc, lw, c0, c1) {
+  const span = arc * 6.283;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, ph, ph + span);
+  const gx1 = cx+Math.cos(ph)*r,   gy1 = cy+Math.sin(ph)*r;
+  const gx2 = cx+Math.cos(ph+span)*r, gy2 = cy+Math.sin(ph+span)*r;
+  const g = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+  g.addColorStop(0, c0); g.addColorStop(1, c1);
+  ctx.strokeStyle = g; ctx.lineWidth = lw; ctx.stroke();
+  /* head dot */
+  const hx = cx+Math.cos(ph+span)*r, hy = cy+Math.sin(ph+span)*r;
+  rglow(ctx, hx, hy, lw*1.8+2, 'rgba(185,242,255,.85)', 'rgba(0,135,252,0)');
+}
+
+/* ════════════════════════════════
+   SPAWN
+════════════════════════════════ */
+function spawnSig(seg) {
+  if (signals.length >= CAP_SIG || !segs.length) return;
+  seg = seg || segs[Math.floor(Math.random()*segs.length)];
+  signals.push({ seg, pos:0, spd:.003+Math.random()*.007, bright:.45+Math.random()*.45, done:false });
+}
+
+function spawnSync() {
+  if (syncs.length >= CAP_SYNC || hubs.length < 2) return;
+  const h = hubs[Math.floor(Math.random()*hubs.length)];
+  const t = hubs[h.conns[Math.floor(Math.random()*h.conns.length)]];
+  syncs.push({ x:h.x, y:h.y, tx:t.x, ty:t.y, toId:t.id, pos:0, spd:.0034+Math.random()*.0028, bright:.65+Math.random()*.3, done:false });
+}
+
+function pulseHub(hub) {
+  hub.glow = 1.0;
+  /* light nearby nodes (distance-delayed for wave feel) */
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const nd = nodes[r] && nodes[r][c]; if (!nd) continue;
+    const d = Math.hypot(hub.x-nd.x, hub.y-nd.y);
+    if (d < hub.R*3.6)
+      setTimeout(() => { nd.glow = Math.min(1, nd.glow + (1-d/(hub.R*3.6))*.75); }, d*.9);
+  }
+  /* radiate a few signals from feed segs */
+  const picks = hub.feedSegs.slice().sort(() => Math.random()-.5).slice(0, 3);
+  picks.forEach(s => { s.glow = Math.min(s.glow+.8, 1); spawnSig(s); });
+  /* trigger one sync */
+  if (Math.random() < .65) spawnSync();
+  /* pulse satellites */
+  sats.filter(s => s.pid===hub.id).forEach(s => { s.glow = 1.0; });
+  /* occasionally birth an orb near this hub */
+  if (Math.random() < .55 && orbs.filter(o=>!o.done).length < CAP_ORB) spawnOrb();
+}
+
+function activateNode() {
+  const r = Math.floor(Math.random()*ROWS), c = Math.floor(Math.random()*COLS);
+  const nd = nodes[r] && nodes[r][c];
+  if (!nd || !nd.isNode) return;
+  nd.glow = Math.min(1, nd.glow + .6 + Math.random()*.3);
+  const nearby = segs.filter(s => { const co=segCoords(s); return Math.hypot(nd.x-co.mx, nd.y-co.my) < CW*3; });
+  if (nearby.length) spawnSig(nearby[Math.floor(Math.random()*nearby.length)]);
+}
+
+/* ════════════════════════════════
+   RENDER HUB
+════════════════════════════════ */
+function renderHub(ctx, hub) {
+  hub.pwPh += .026;
+  hub.pw    = (Math.sin(hub.pwPh) + 1) * .5;
+  hub.glow *= .955;
+  const tg = hub.pw * .40 + hub.glow * .60;
+
+  /* outer ambient */
+  rglow(ctx, hub.x, hub.y, hub.R*3.8, `rgba(0,105,238,${.026+tg*.042})`, 'rgba(0,20,102,0)');
+
+  /* static ring outlines */
+  hub.rings.forEach(ring => {
+    ctx.beginPath(); ctx.arc(hub.x, hub.y, ring.r, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(0,68,182,${.045+tg*.028})`; ctx.lineWidth = .38; ctx.stroke();
+  });
+
+  /* rotating arcs — slow and smooth */
+  hub.rings.forEach((ring, ri) => {
+    ring.ph += ring.spd * activity;
+    const lw = 1.9 - ri*.35;
+    rarc(ctx, hub.x, hub.y, ring.r, ring.ph, ring.arc, lw,
+      'rgba(0,118,248,0)', `rgba(${60+ri*16},${205-ri*12},255,${.78+tg*.18})`);
+  });
+
+  /* orbit particles on outer ring */
+  const or = hub.rings[0];
+  for (let i = 0; i < hub.orbitN; i++) {
+    const a  = or.ph + (6.283/hub.orbitN)*i;
+    const px = hub.x + Math.cos(a)*or.r;
+    const py = hub.y + Math.sin(a)*or.r;
+    rglow(ctx, px, py, 2.4+tg*1.4, `rgba(190,242,255,${.58+tg*.30})`, 'rgba(0,145,250,0)');
+  }
+
+  /* center */
+  rglow(ctx, hub.x, hub.y, hub.R*.26+tg*hub.R*.09, `rgba(165,235,255,${.44+tg*.42})`, 'rgba(0,88,212,0)');
+  ctx.beginPath(); ctx.arc(hub.x, hub.y, 2.8+tg*1.6, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(220,250,255,${.80+tg*.18})`; ctx.fill();
+
+  /* label — subtle */
+  const fs = Math.max(7, Math.round(hub.R*.16));
+  ctx.font = `${fs}px 'Courier New'`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = `rgba(0,140,248,${.07+tg*.09})`;
+  ctx.fillText('CORE-'+hub.label, hub.x, hub.y+hub.R*1.65);
+}
+
+/* ════════════════════════════════
+   RENDER SAT
+════════════════════════════════ */
+function renderSat(ctx, sat) {
+  sat.ph   += sat.spd  * activity;
+  sat.iPh  += sat.iSpd * activity;
+  sat.pwPh  = (sat.pwPh||0) + .020;
+  sat.pw    = (Math.sin(sat.pwPh) + 1) * .5;
+  sat.glow *= .962;
+  const tg  = sat.pw * .32 + sat.glow * .68;
+
+  rglow(ctx, sat.x, sat.y, sat.R*2.4, `rgba(0,88,205,${.018+tg*.018})`, 'rgba(0,18,112,0)');
+  ctx.beginPath(); ctx.arc(sat.x, sat.y, sat.R, 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(0,62,172,${.042+tg*.028})`; ctx.lineWidth = .32; ctx.stroke();
+
+  rarc(ctx, sat.x, sat.y, sat.R,    sat.ph,  sat.arc,  1.3, 'rgba(0,112,248,0)', `rgba(95,215,255,${.76+tg*.18})`);
+  rarc(ctx, sat.x, sat.y, sat.R*.6, sat.iPh, sat.iArc, .85, 'rgba(0,98,248,0)',  `rgba(58,195,255,${.66+tg*.22})`);
+  rglow(ctx, sat.x, sat.y, 2.8+tg*2.0, `rgba(138,222,255,${.40+tg*.42})`, 'rgba(0,88,248,0)');
+}
+
+/* ════════════════════════════════
+   ORB SYSTEM — energy spheres traversing circuit graph
+════════════════════════════════ */
+
+/* Pick a random graph node to start from */
+function randomGraphNode() {
+  const keys = Object.keys(orbGraph);
+  if (!keys.length) return null;
+  return orbGraph[keys[Math.floor(Math.random() * keys.length)]];
+}
+
+function spawnOrb() {
+  if (orbs.length >= CAP_ORB) return;
+  const startNode = randomGraphNode();
+  if (!startNode || !startNode.nbrs.length) return;
+
+  // Pick a random neighbour to head toward first
+  const nb = startNode.nbrs[Math.floor(Math.random() * startNode.nbrs.length)];
+  const seg = nb.seg;
+  const co  = segCoords(seg);
+
+  // Determine start world-position from the graph node
+  const sx = startNode.col * CW;
+  const sy = startNode.row * CH;
+
+  // pos along segment: if dir=1, orb starts at b0 end, travels to b1 end
+  const startPos = nb.dir === 1 ? 0 : 1;
+
+  orbs.push({
+    // current segment being traversed
+    seg, pos: startPos, dir: nb.dir,
+    // destination node in graph
+    destCol: nb.col, destRow: nb.row,
+    // current node (to pick next direction from)
+    curCol: startNode.col, curRow: startNode.row,
+
+    // visuals
+    size:    2.2 + Math.random() * 1.8,          // sphere radius
+    speed:   .0022 + Math.random() * .0038,      // segment traversal speed
+    bright:  .55 + Math.random() * .45,
+    color:   Math.random() < .75 ? 0 : 1,        // 0=blue, 1=cyan-white
+
+    // lifetime & fade
+    life:    1.0,
+    maxLife: 1.0,
+    decay:   .0008 + Math.random() * .0012,      // very slow fade
+
+    // pause at nodes
+    pause:   0,                                   // remaining pause frames
+
+    // trail — ring buffer of last N positions
+    trail:   [],
+    trailMax: 10,
+
+    done: false,
+  });
+}
+
+/* Orb picks next segment at its current node */
+function orbChooseNext(orb) {
+  const key = orb.destCol + ',' + orb.destRow;
+  const node = orbGraph[key];
+  if (!node || !node.nbrs.length) { orb.done = true; return; }
+
+  // Exclude the segment we just came from (avoid immediate U-turn if alternatives exist)
+  const opts = node.nbrs.filter(nb => nb.seg !== orb.seg || node.nbrs.length === 1);
+  const nb   = opts[Math.floor(Math.random() * opts.length)];
+
+  orb.curCol  = orb.destCol;
+  orb.curRow  = orb.destRow;
+  orb.seg     = nb.seg;
+  orb.dir     = nb.dir;
+  orb.pos     = nb.dir === 1 ? 0 : 1;
+  orb.destCol = nb.col;
+  orb.destRow = nb.row;
+
+  // 20% chance to pause briefly at intersection
+  if (Math.random() < .20) orb.pause = 12 + Math.floor(Math.random() * 28);
+}
+
+function renderOrbs(ctx) {
+  orbs.forEach(orb => {
+    if (orb.done) return;
+
+    // Handle pause at node
+    if (orb.pause > 0) {
+      orb.pause--;
+      // Draw orb stationary at current node while paused
+      const co  = segCoords(orb.seg);
+      const nx  = orb.curCol * CW, ny = orb.curRow * CH;
+      const alpha = orb.life * orb.bright;
+
+      // Pulsing idle glow at node
+      const pulseR = orb.size + Math.sin(frame * .18) * 1.2;
+      rglow(ctx, nx, ny, pulseR * 4,   `rgba(0,175,255,${alpha*.28})`, 'rgba(0,60,200,0)');
+      rglow(ctx, nx, ny, pulseR * 1.5, `rgba(80,210,255,${alpha*.80})`, 'rgba(0,120,240,0)');
+      ctx.beginPath(); ctx.arc(nx, ny, pulseR * .55, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(220,248,255,${alpha})`; ctx.fill();
+      return;
+    }
+
+    // Advance along segment
+    orb.pos += orb.speed * orb.dir * activity;
+    const arrived = orb.dir === 1 ? orb.pos >= 1 : orb.pos <= 0;
+
+    // Current world position
+    const co = segCoords(orb.seg);
+    const p  = clamp(orb.pos, 0, 1);
+    const wx = co.x1 + (co.x2 - co.x1) * p;
+    const wy = co.y1 + (co.y2 - co.y1) * p;
+
+    // Light up the segment the orb is on
+    orb.seg.glow = Math.max(orb.seg.glow, orb.bright * .45 * orb.life);
+
+    // Record trail
+    orb.trail.push({x: wx, y: wy, a: orb.life * orb.bright});
+    if (orb.trail.length > orb.trailMax) orb.trail.shift();
+
+    const alpha = orb.life * orb.bright;
+
+    // Draw trail — fading line segments
+    if (orb.trail.length > 1) {
+      for (let i = 1; i < orb.trail.length; i++) {
+        const t0 = orb.trail[i-1], t1 = orb.trail[i];
+        const ta = (i / orb.trail.length) * alpha * .5;
+        ctx.beginPath(); ctx.moveTo(t0.x, t0.y); ctx.lineTo(t1.x, t1.y);
+        ctx.strokeStyle = orb.color === 0
+          ? `rgba(0,168,252,${ta})`
+          : `rgba(120,225,255,${ta})`;
+        ctx.lineWidth = orb.size * .55 * (i / orb.trail.length);
+        ctx.stroke();
+      }
+    }
+
+    // Outer bloom
+    rglow(ctx, wx, wy, orb.size * 5.5,
+      orb.color === 0 ? `rgba(0,155,248,${alpha*.22})` : `rgba(80,205,255,${alpha*.18})`,
+      'rgba(0,50,200,0)');
+
+    // Mid glow
+    rglow(ctx, wx, wy, orb.size * 2.2,
+      orb.color === 0 ? `rgba(20,175,252,${alpha*.72})` : `rgba(100,220,255,${alpha*.68})`,
+      'rgba(0,90,230,0)');
+
+    // Core sphere
+    ctx.beginPath(); ctx.arc(wx, wy, orb.size * .65, 0, Math.PI*2);
+    ctx.fillStyle = orb.color === 0
+      ? `rgba(160,228,255,${alpha})`
+      : `rgba(220,248,255,${alpha})`;
+    ctx.fill();
+
+    // Specular highlight
+    ctx.beginPath(); ctx.arc(wx - orb.size*.22, wy - orb.size*.22, orb.size*.22, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${alpha*.55})`; ctx.fill();
+
+    // Life decay
+    orb.life -= orb.decay;
+    if (orb.life <= 0) { orb.done = true; return; }
+
+    // Arrived at destination node → choose next segment
+    if (arrived) orbChooseNext(orb);
+  });
+
+  // Prune
+  if (orbs.length > CAP_ORB + 2) orbs = orbs.filter(o => !o.done);
+}
+
+/* ════════════════════════════════
+   RENDER CIRCUIT + SIGNALS
+════════════════════════════════ */
+function renderNet() {
+  gNet.clearRect(0, 0, W, H);
+  const ox = plx.x * .005, oy = plx.y * .005;
+  gNet.save(); gNet.translate(ox, oy);
+
+  /* Hub connection lines */
+  conns.forEach(({a, b}) => {
+    const pulse = Math.max(a.pw, b.pw) * .38;
+    const alpha = .048 + pulse*.065;
+    const g = gNet.createLinearGradient(a.x, a.y, b.x, b.y);
+    g.addColorStop(0,  `rgba(0,88,208,${alpha*1.2})`);
+    g.addColorStop(.5, `rgba(0,112,242,${alpha*1.7})`);
+    g.addColorStop(1,  `rgba(0,88,208,${alpha*1.2})`);
+    gNet.beginPath(); gNet.moveTo(a.x, a.y); gNet.lineTo(b.x, b.y);
+    gNet.strokeStyle = g; gNet.lineWidth = .48 + pulse*.65;
+    gNet.setLineDash([4,9]); gNet.stroke(); gNet.setLineDash([]);
+  });
+
+  /* Sat tether lines */
+  sats.forEach(sat => {
+    const hub = hubs[sat.pid];
+    const a   = .026 + sat.glow*.048;
+    const g = gNet.createLinearGradient(hub.x, hub.y, sat.x, sat.y);
+    g.addColorStop(0, `rgba(0,102,222,${a*1.3})`);
+    g.addColorStop(1, `rgba(0,76,185,${a})`);
+    gNet.beginPath(); gNet.moveTo(hub.x, hub.y); gNet.lineTo(sat.x, sat.y);
+    gNet.strokeStyle = g; gNet.lineWidth = .38;
+    gNet.setLineDash([3,11]); gNet.stroke(); gNet.setLineDash([]);
+  });
+
+  /* Circuit segments */
+  segs.forEach(s => {
+    const co  = segCoords(s);
+    const md  = Math.hypot(mouse.x-ox-co.mx, mouse.y-oy-co.my);
+    const mG  = clamp(1-md/130, 0, 1) * .28;
+    const wv  = wave * .48;                // wave modulates ambient brightness
+    const base= s.bLum * (.38+wv*.62) * (.34+s.bg*.66);
+    const alpha = clamp(base + s.glow*.24 + mG, 0, .55);
+    gNet.beginPath(); gNet.moveTo(co.x1, co.y1); gNet.lineTo(co.x2, co.y2);
+    gNet.strokeStyle = `rgba(16,100,235,${alpha})`;
+    gNet.lineWidth   = .38 + s.glow*.55 + mG*.22;
+    gNet.stroke();
+    s.glow *= .972;
+  });
+
+  /* Signals */
+  signals.forEach(sig => {
+    if (sig.done) return;
+    const s = sig.seg, co = segCoords(s);
+    const px = co.x1 + (co.x2-co.x1)*sig.pos;
+    const py = co.y1 + (co.y2-co.y1)*sig.pos;
+    s.glow = Math.max(s.glow, sig.bright*.55);
+    const t0 = Math.max(0, sig.pos-.18);
+    const tx = co.x1+(co.x2-co.x1)*t0, ty = co.y1+(co.y2-co.y1)*t0;
+
+    /* tail gradient */
+    const tg = gNet.createLinearGradient(tx, ty, px, py);
+    tg.addColorStop(0,   'rgba(0,98,248,0)');
+    tg.addColorStop(.5,  `rgba(0,145,248,${sig.bright*.35})`);
+    tg.addColorStop(1,   `rgba(0,212,252,${sig.bright})`);
+    gNet.beginPath(); gNet.moveTo(tx, ty); gNet.lineTo(px, py);
+    gNet.strokeStyle = tg; gNet.lineWidth = 1.3; gNet.stroke();
+
+    /* head glow */
+    rglow(gNet, px, py, 5.5, `rgba(78,210,252,${sig.bright})`, 'rgba(0,62,192,0)');
+    gNet.beginPath(); gNet.arc(px, py, 1.6, 0, Math.PI*2);
+    gNet.fillStyle = `rgba(195,244,255,${sig.bright})`; gNet.fill();
+
+    sig.pos += sig.spd * activity;
+    if (sig.pos >= 1) sig.done = true;
+  });
+
+  /* Orbs — energy spheres navigating intersection graph */
+  renderOrbs(gNet);
+
+  /* Nodes */
+  activeNodes = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const nd = nodes[r] && nodes[r][c]; if (!nd) continue;
+      const md = Math.hypot(mouse.x-ox-nd.x, mouse.y-oy-nd.y);
+      const mB = clamp(1-md/90, 0, 1) * .40;
+      const tG = nd.glow + mB + wave*nd.bLum*.28;
+      if (tG > .04) {
+        const rr = 8.5 * clamp(tG, 0, 1.2);
+        const ng = gNet.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, rr);
+        ng.addColorStop(0,   `rgba(55,188,250,${clamp(tG*.80, 0, .88)})`);
+        ng.addColorStop(.45, `rgba(12,105,242,${clamp(tG*.28, 0, .38)})`);
+        ng.addColorStop(1,   'rgba(0,40,192,0)');
+        gNet.beginPath(); gNet.arc(nd.x, nd.y, rr, 0, Math.PI*2);
+        gNet.fillStyle = ng; gNet.fill();
+        if (nd.isNode) {
+          gNet.beginPath(); gNet.arc(nd.x, nd.y, 1.8, 0, Math.PI*2);
+          gNet.fillStyle = `rgba(165,238,255,${clamp(tG, 0, 1)})`; gNet.fill();
+          if (tG > .24) activeNodes++;
+        }
+      }
+      nd.glow *= .952;
+    }
+  }
+
+  gNet.restore();
+}
+
+/* ════════════════════════════════
+   RENDER FX (hubs, sats, syncs, ripples, scan, particles)
+════════════════════════════════ */
+let scanY = 0, scanDir = 1;
+
+function renderFx() {
+  gFx.clearRect(0, 0, W, H);
+  const ox = plx.x * .013, oy = plx.y * .013;
+  gFx.save(); gFx.translate(ox, oy);
+
+  sats.forEach(s => renderSat(gFx, s));
+  hubs.forEach(h => renderHub(gFx, h));
+
+  /* Sync pulses — inter-hub energy transfer */
+  syncs.forEach(sp => {
+    if (sp.done) return;
+    const px = sp.x + (sp.tx-sp.x)*sp.pos;
+    const py = sp.y + (sp.ty-sp.y)*sp.pos;
+    const t0 = Math.max(0, sp.pos-.10);
+    const tx = sp.x+(sp.tx-sp.x)*t0, ty = sp.y+(sp.ty-sp.y)*t0;
+
+    const tg = gFx.createLinearGradient(tx, ty, px, py);
+    tg.addColorStop(0, 'rgba(0,128,248,0)');
+    tg.addColorStop(1, `rgba(65,205,252,${sp.bright*.78})`);
+    gFx.beginPath(); gFx.moveTo(tx, ty); gFx.lineTo(px, py);
+    gFx.strokeStyle = tg; gFx.lineWidth = 1.8; gFx.stroke();
+    rglow(gFx, px, py, 9, `rgba(140,228,252,${sp.bright})`, 'rgba(0,108,248,0)');
+    gFx.beginPath(); gFx.arc(px, py, 2.5, 0, Math.PI*2);
+    gFx.fillStyle = `rgba(210,248,255,${sp.bright})`; gFx.fill();
+
+    sp.pos += sp.spd * activity;
+    if (sp.pos >= 1) {
+      sp.done = true;
+      const dest = hubs[sp.toId]; if (dest) pulseHub(dest);
+      sats.filter(s => s.pid===sp.toId).forEach(s => { s.glow = 1.0; });
+    }
+  });
+  syncs = syncs.filter(s => !s.done);
+
+  gFx.restore();
+
+  /* Ripples */
+  ripples.forEach(rp => {
+    if (rp.life <= 0) return;
+    const prog  = 1 - rp.life;
+    const eased = 1 - Math.pow(1-prog, 2.4);
+    const r     = rp.maxR * eased;
+    const a     = rp.life;
+
+    gFx.beginPath(); gFx.arc(rp.x, rp.y, r, 0, Math.PI*2);
+    gFx.strokeStyle = `rgba(0,188,248,${a*.75})`; gFx.lineWidth = 1.7*rp.life; gFx.stroke();
+    gFx.beginPath(); gFx.arc(rp.x, rp.y, r, 0, Math.PI*2);
+    gFx.strokeStyle = `rgba(0,135,248,${a*.14})`; gFx.lineWidth = 7*rp.life; gFx.stroke();
+    if (r > 22) {
+      gFx.beginPath(); gFx.arc(rp.x, rp.y, r*.70, 0, Math.PI*2);
+      gFx.strokeStyle = `rgba(44,205,248,${a*.34})`; gFx.lineWidth = .9*rp.life; gFx.stroke();
+    }
+    if (r > 58) {
+      gFx.beginPath(); gFx.arc(rp.x, rp.y, r*.42, 0, Math.PI*2);
+      gFx.strokeStyle = `rgba(85,218,248,${a*.20})`; gFx.lineWidth = .6*rp.life; gFx.stroke();
+    }
+    if (a > .58) rglow(gFx, rp.x, rp.y, r*.30, `rgba(0,168,248,${(a-.58)*.10})`, 'rgba(0,85,248,0)');
+    rp.life -= .010;
+  });
+  ripples = ripples.filter(rp => rp.life > 0);
+
+  /* Single elegant scan line — slow drift */
+  scanY += scanDir * .14;
+  if (scanY >  H+55) scanDir = -1;
+  if (scanY < -55)   scanDir =  1;
+  const sg = gFx.createLinearGradient(0, scanY-52, 0, scanY+52);
+  sg.addColorStop(0,  'rgba(0,145,248,0)');
+  sg.addColorStop(.5, `rgba(0,145,248,${.030*(0.4+wave*.6)})`);
+  sg.addColorStop(1,  'rgba(0,145,248,0)');
+  gFx.fillStyle = sg; gFx.fillRect(0, scanY-52, W, 104);
+
+  /* Particles */
+  particles.forEach(p => {
+    const a = p.life * p.maxA;
+    rglow(gFx, p.x, p.y, p.sz*2.0, `rgba(92,198,250,${a})`, 'rgba(0,85,250,0)');
+    gFx.beginPath(); gFx.arc(p.x, p.y, p.sz*.42, 0, Math.PI*2);
+    gFx.fillStyle = `rgba(195,244,255,${a})`; gFx.fill();
+    p.x += p.vx; p.y += p.vy; p.vy += .009; p.life -= p.dc;
+  });
+  particles = particles.filter(p => p.life > 0);
+}
+
+/* ════════════════════════════════
+   MOUSE PARTICLES — very sparse
+════════════════════════════════ */
+function spawnMousePart() {
+  if (mouse.x < 0 || particles.length >= CAP_PART || Math.random() > .14) return;
+  const a = Math.random()*6.283, sp = .16+Math.random()*.65;
+  particles.push({
+    x: mouse.x + (Math.random()-.5)*6, y: mouse.y + (Math.random()-.5)*6,
+    vx: Math.cos(a)*sp*.40, vy: Math.sin(a)*sp*.40 - .18,
+    sz: .45+Math.random()*.95, life:1,
+    maxA: .24+Math.random()*.18, dc: .012+Math.random()*.014,
+  });
+}
+
+/* ════════════════════════════════
+   ACTIVITY — slow calm waves
+════════════════════════════════ */
+function updateActivity() {
+  /* Change target every ~9 seconds */
+  if (frame % 540 === 0) {
+    const r = Math.random();
+    actTarget = r < .22 ? .10 + Math.random()*.18   // quiet
+              : r < .60 ? .58 + Math.random()*.32   // normal
+                        : .88 + Math.random()*.36;  // active
+  }
+  activity += (actTarget - activity) * .005;
+  wave = (Math.sin(frame * .0068) + 1) * .5;
+}
+
+/* ════════════════════════════════
+   SPAWN CADENCE — wave-gated
+════════════════════════════════ */
+function updateSpawns() {
+  const sigCount = signals.filter(s => !s.done).length;
+
+  /* Signals only spawn when wave is in upper half */
+  if (wave > .5 && sigCount < CAP_SIG) {
+    const rate = Math.max(3, Math.round(32 / clamp(activity, .1, 2)));
+    if (frame % rate === 0) spawnSig();
+  }
+
+  /* Hub pulses: accumulate clock based on activity */
+  hubClock += activity;
+  if (hubClock > 420) {
+    hubClock = 0;
+    pulseHub(hubs[Math.floor(Math.random()*hubs.length)]);
+    if (Math.random() < .40) pulseHub(hubs[0]); // center more frequent
+  }
+
+  /* Sync: only when quiet enough */
+  const syncCount = syncs.filter(s => !s.done).length;
+  if (syncCount < CAP_SYNC && frame % 160 === 0 && Math.random() < activity*.42)
+    spawnSync();
+
+  /* Node activations: occasional */
+  if (frame %  70 === 0 && Math.random() < activity*.60) activateNode();
+  if (frame % 200 === 0) { activateNode(); }
+
+  /* Prune stale arrays */
+  if (signals.length  > CAP_SIG+3)  signals  = signals.filter(s => !s.done);
+  if (syncs.length    > CAP_SYNC+2)  syncs    = syncs.filter(s => !s.done);
+  if (particles.length > CAP_PART)   particles = particles.slice(-CAP_PART);
+
+  /* Orbs — spawn slowly, staggered, wave-gated */
+  const orbCount = orbs.filter(o => !o.done).length;
+  if (orbCount < CAP_ORB && frame % Math.max(90, Math.round(220 / clamp(activity, .15, 2))) === 0)
+    spawnOrb();
+  /* Extra orb burst when a hub pulses (called from pulseHub) */
+}
+
+/* ════════════════════════════════
+   HUD
+════════════════════════════════ */
+const STATS = ['ACTIVE','ROUTING','SCANNING','SYNCING','SECURED'];
+function updateHUD() {
+  const e  = Math.floor((Date.now()-t0)/1000);
+  const mm = String(Math.floor(e/60)).padStart(2,'0');
+  const ss = String(e%60).padStart(2,'0');
+  document.getElementById('hUp').textContent = `${mm}:${ss}`;
+  document.getElementById('hSg').textContent = signals.filter(s=>!s.done).length + syncs.length + orbs.filter(o=>!o.done).length;
+  document.getElementById('hNd').textContent = activeNodes;
+  document.getElementById('hGr').textContent = `${COLS}×${ROWS}`;
+  document.getElementById('hLd').textContent = Math.round(activity*50+Math.random()*12+8);
+  document.getElementById('hCo').textContent = hubs.length + sats.length;
+  document.getElementById('hPi').textContent = Math.round(2+Math.random()*6);
+  const bars = clamp(Math.round(activity*8), 0, 8);
+  document.getElementById('hBr').textContent = '■'.repeat(bars)+'□'.repeat(8-bars);
+  if (frame % 260 === 0)
+    document.getElementById('hSt').textContent = STATS[Math.floor(Math.random()*STATS.length)];
+}
+
+/* ════════════════════════════════
+   MAIN LOOP
+════════════════════════════════ */
+function loop() {
+  frame++;
+  updateActivity();
+  /* smooth parallax */
+  plx.x += (plx.tx - plx.x) * .036;
+  plx.y += (plx.ty - plx.y) * .036;
+
+  if (bgDirty) drawBg();
+
+  updateSpawns();
+  renderNet();
+  renderFx();
+  spawnMousePart();
+
+  if (frame % 34 === 0) updateHUD();
+
+  raf = requestAnimationFrame(loop);
+}
+
+/* ════════════════════════════════
+   EVENTS
+════════════════════════════════ */
+wrap.addEventListener('mousemove', e => {
+  mouse.x = e.clientX; mouse.y = e.clientY;
+  plx.tx  = (e.clientX - W/2) * .36;
+  plx.ty  = (e.clientY - H/2) * .36;
+});
+wrap.addEventListener('mouseleave', () => { mouse.x = -1e5; mouse.y = -1e5; });
+
+wrap.addEventListener('click', e => {
+  const cx = e.clientX, cy = e.clientY;
+  const maxR = Math.min(W,H) * .22;
+
+  /* Smooth multi-ring ripple */
+  if (ripples.length < CAP_RIP) {
+    ripples.push({x:cx, y:cy, maxR, life:1});
+    setTimeout(() => { if(ripples.length<CAP_RIP) ripples.push({x:cx,y:cy,maxR:maxR*.74,life:.80});}, 88);
+    setTimeout(() => { if(ripples.length<CAP_RIP) ripples.push({x:cx,y:cy,maxR:maxR*.48,life:.58});}, 195);
+  }
+
+  /* Activate nearest hub */
+  let best = null, bD = Infinity;
+  hubs.forEach(h => { const d = Math.hypot(cx-h.x, cy-h.y); if (d < bD) { bD=d; best=h; }});
+  if (best) pulseHub(best);
+
+  /* Wave-light nearby elements */
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const nd = nodes[r] && nodes[r][c]; if (!nd) continue;
+    const d = Math.hypot(cx-nd.x, cy-nd.y);
+    if (d < maxR) setTimeout(() => { nd.glow = Math.max(nd.glow, (1-d/maxR)*.85); }, d*.8);
+  }
+  segs.forEach(s => {
+    const co = segCoords(s), d = Math.hypot(cx-co.mx, cy-co.my);
+    if (d < maxR*1.05) setTimeout(() => { s.glow = Math.max(s.glow, (1-d/(maxR*1.05))*.78); }, d*.7);
+  });
+
+  /* Small elegant particle burst */
+  const burst = clamp(8, 0, CAP_PART - particles.length);
+  for (let i = 0; i < burst; i++) {
+    const a  = (6.283/burst)*i + (Math.random()-.5)*.5;
+    const sp = .18 + Math.random()*.55;
+    particles.push({
+      x:cx+(Math.random()-.5)*8, y:cy+(Math.random()-.5)*8,
+      vx:Math.cos(a)*sp*.28, vy:Math.sin(a)*sp*.28-.12,
+      sz:.5+Math.random()*1.0, life:1,
+      maxA:.32+Math.random()*.16, dc:.006+Math.random()*.006,
+    });
+  }
+  for (let i = 0; i < 2; i++) spawnSig();
+});
+
+let _rt;
+window.addEventListener('resize', () => {
+  clearTimeout(_rt);
+  _rt = setTimeout(() => {
+    onResize();
+    /* Re-anchor hubs and sats to fractional screen positions */
+    hubs.forEach(h => { h.x = W*h.fx; h.y = H*h.fy; });
+    sats.forEach(s => {
+      const hub = hubs[s.pid];
+      const a   = Math.atan2(s.y-hub.y, s.x-hub.x);
+      const d   = hub.R * (2.5 + Math.random()*.7);
+      s.x = clamp(hub.x+Math.cos(a)*d, W*.07, W*.93);
+      s.y = clamp(hub.y+Math.sin(a)*d, H*.07, H*.93);
+    });
+    drawBg();
+  }, 160);
+});
+
+/* ════════════════════════════════
+   BOOT
+════════════════════════════════ */
+onResize();
+loop();
+
+})();
+</script>
+</body>
+</html>
