@@ -18,8 +18,8 @@
         .col-img { width: 160px; }
         .img-box { width: 150px; height: 110px; border: 1px solid #e5e7eb; background: #ffffff; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: contain; }
-        .ttd-box { width: 150px; height: 70px; border: 1px solid #e5e7eb; background: #ffffff; overflow: hidden; }
-        .ttd-box img { width: 100%; height: 100%; object-fit: contain; }
+        .ttd-box { width: 150px; height: 70px; border: 1px solid #e5e7eb; background: #ffffff; overflow: hidden; display: grid; place-items: center; padding: 4px; }
+        .ttd-box img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
         .section-label { text-align: center; font-size: 11px; font-weight: 700; color: #374151; margin-top: 2px; }
     </style>
 </head>

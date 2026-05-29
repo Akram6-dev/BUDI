@@ -65,12 +65,8 @@ function pointInCard(px, py, pad) {
   return cards.some(c => px >= c.x-pad && px <= c.x+c.w+pad && py >= c.y-pad && py <= c.y+c.h+pad);
 }
 function cardGlow(px, py, amount) {
-  cards.forEach(c => {
-    const cx = c.x + c.w/2, cy = c.y + c.h/2;
-    const d  = Math.hypot(px-cx, py-cy);
-    const maxD = Math.hypot(c.w, c.h);
-    if (d < maxD) c.glow = Math.min(1, c.glow + amount * (1 - d/maxD));
-  });
+  // Card glow effect disabled.
+  return;
 }
 
 /* ════════════════════════════════
@@ -558,9 +554,6 @@ function renderOrbs(ctx) {
     // Light up the segment the orb is on
     orb.seg.glow = Math.max(orb.seg.glow, orb.bright * .45 * orb.life);
 
-    // Light up card if orb nearby
-    cardGlow(wx, wy, orb.bright * orb.life * .08);
-
     // Record trail
     orb.trail.push({x: wx, y: wy, a: orb.life * orb.bright});
     if (orb.trail.length > orb.trailMax) orb.trail.shift();
@@ -786,31 +779,9 @@ function renderFx() {
     }
     if (a > .58) rglow(gFx, rp.x, rp.y, r*.30, `rgba(0,168,248,${(a-.58)*.10})`, 'rgba(0,85,248,0)');
 
-    // Light up cards near ripple edge
-    cardGlow(rp.x, rp.y, a * .04);
-
     rp.life -= .010;
   });
   ripples = ripples.filter(rp => rp.life > 0);
-
-  /* Card glow effect */
-  cards.forEach(c => {
-    if (c.glow > 0.01) {
-      const cx = c.x + c.w/2, cy = c.y + c.h/2;
-      const gr = gFx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(c.w, c.h) * .8);
-      gr.addColorStop(0, `rgba(0,180,255,${c.glow * .18})`);
-      gr.addColorStop(1, 'rgba(0,60,200,0)');
-      gFx.fillStyle = gr;
-      gFx.fillRect(c.x - 40, c.y - 40, c.w + 80, c.h + 80);
-
-      // Border glow
-      gFx.strokeStyle = `rgba(0,210,255,${c.glow * .55})`;
-      gFx.lineWidth = 1.5;
-      gFx.strokeRect(c.x, c.y, c.w, c.h);
-
-      c.glow *= .94;
-    }
-  });
 
   /* Single elegant scan line — slow drift */
   scanY += scanDir * .14;

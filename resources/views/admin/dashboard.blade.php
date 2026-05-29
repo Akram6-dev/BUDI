@@ -545,11 +545,67 @@
             padding: 0.5rem 0;
         }
 
-        .preview-image {
-            max-width: 100%;
+        .preview-grid {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.4fr);
+            gap: 1.5rem;
+            align-items: start;
+            margin-bottom: 1.75rem;
+        }
+
+        .preview-left,
+        .preview-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .preview-photo-box,
+        .preview-signature-box {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
+        }
+
+        .preview-photo-box img,
+        .preview-signature-box img {
+            width: 100%;
             height: auto;
-            border-radius: 5px;
+            display: block;
+            object-fit: cover;
+        }
+
+        .preview-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .preview-label {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+
+        .preview-value {
+            color: #374151;
+            font-size: 1.05rem;
+            padding: 0.75rem 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .preview-signature {
             margin-top: 0.5rem;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         .form-group {
@@ -917,7 +973,17 @@
             fetch(`/api/data/${id}`)
                 .then(r => r.json())
                 .then(data => {
-                    let previewHTML = `
+                    const fotoHTML = data.foto ? `
+                        <div class="preview-photo-box">
+                            <img src="/storage/${data.foto}" alt="Foto" class="preview-image" style="max-height: 340px;">
+                        </div>
+                    ` : `
+                        <div class="preview-photo-box" style="padding: 2rem; text-align: center; color: #6b7280;">
+                            Foto belum tersedia
+                        </div>
+                    `;
+
+                    let infoHTML = `
                         <div class="preview-item">
                             <div class="preview-label">Nama</div>
                             <div class="preview-value">${data.nama}</div>
@@ -929,7 +995,7 @@
                     `;
 
                     if (data.kelas && section === 'student') {
-                        previewHTML += `
+                        infoHTML += `
                             <div class="preview-item">
                                 <div class="preview-label">Kelas</div>
                                 <div class="preview-value">${data.kelas}</div>
@@ -937,23 +1003,31 @@
                         `;
                     }
 
-                    if (data.foto) {
-                        previewHTML += `
-                            <div class="preview-item">
-                                <div class="preview-label">Foto</div>
-                                <img src="/storage/${data.foto}" alt="Foto" class="preview-image" style="max-height: 300px;">
-                            </div>
-                        `;
-                    }
+                    const signatureHTML = data.tanda_tangan ? `
+                        <div class="preview-signature-box">
+                            <img src="/storage/${data.tanda_tangan}" alt="Tanda Tangan" class="preview-image" style="max-height: 260px;">
+                        </div>
+                    ` : `
+                        <div class="preview-signature-box" style="padding: 1.25rem; color: #6b7280; text-align: center;">
+                            Tanda tangan belum tersedia
+                        </div>
+                    `;
 
-                    if (data.tanda_tangan) {
-                        previewHTML += `
-                            <div class="preview-item">
-                                <div class="preview-label">Tanda Tangan</div>
-                                <img src="/storage/${data.tanda_tangan}" alt="Tanda Tangan" class="preview-image" style="max-height: 200px;">
+                    const previewHTML = `
+                        <div class="preview-grid">
+                            <div class="preview-left">
+                                <div class="preview-label">Foto</div>
+                                ${fotoHTML}
                             </div>
-                        `;
-                    }
+                            <div class="preview-right">
+                                ${infoHTML}
+                            </div>
+                        </div>
+                        <div class="preview-signature">
+                            <div class="preview-label">Tanda Tangan</div>
+                            ${signatureHTML}
+                        </div>
+                    `;
 
                     document.getElementById('previewBody').innerHTML = previewHTML;
                     document.getElementById('previewModal').classList.add('show');

@@ -102,11 +102,12 @@ nav {
 }
 
 .welcome-text {
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(2.8rem, 6.5vw, 5.2rem);
     font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 40px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    line-height: 1.1;
+    margin-bottom: 42px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    max-width: min(90vw, 920px);
 }
 
 .welcome-text .line1 { color: #FFFFFF; display: block; }
@@ -122,7 +123,7 @@ nav {
 }
 
 .logo-school {
-    height: 90px;
+    height: min(14vw, 130px);
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 0 16px rgba(255,255,255,0.9)) drop-shadow(0 0 32px rgba(180,220,255,0.7)) drop-shadow(0 0 48px rgba(120,180,255,0.4)) brightness(1.4);
@@ -156,14 +157,14 @@ nav {
     background-color: #FFB800;
     color: #6B4C00;
     border: none;
-    padding: 16px 48px;
+    padding: clamp(16px, 1.5vw, 22px) clamp(42px, 3vw, 64px);
     border-radius: 12px;
-    font-size: 1.1rem;
+    font-size: clamp(1.15rem, 1.5vw, 1.45rem);
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
-    box-shadow: 0 4px 16px rgba(255,184,0,0.4);
+    box-shadow: 0 5px 18px rgba(255,184,0,0.4);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
