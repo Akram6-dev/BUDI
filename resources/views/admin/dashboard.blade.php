@@ -1151,9 +1151,14 @@
 
             loadTeachers();
 
-            document.getElementById('teacher-search').addEventListener('keyup', loadTeachers);
-            document.getElementById('student-search-nama').addEventListener('keyup', loadStudents);
-            document.getElementById('student-search-kelas').addEventListener('keyup', loadStudents);
+            let searchTimer;
+            function debounce(fn) {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(fn, 300);
+            }
+            document.getElementById('teacher-search').addEventListener('keyup', () => debounce(loadTeachers));
+            document.getElementById('student-search-nama').addEventListener('keyup', () => debounce(loadStudents));
+            document.getElementById('student-search-kelas').addEventListener('keyup', () => debounce(loadStudents));
 
             document.getElementById('previewModal').addEventListener('click', function(e) {
                 if (e.target === this) closePreviewModal();

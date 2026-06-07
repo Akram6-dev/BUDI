@@ -64,10 +64,7 @@ function updateCards() {
 function pointInCard(px, py, pad) {
   return cards.some(c => px >= c.x-pad && px <= c.x+c.w+pad && py >= c.y-pad && py <= c.y+c.h+pad);
 }
-function cardGlow(px, py, amount) {
-  // Card glow effect disabled.
-  return;
-}
+function cardGlow(px, py, amount) { return; }
 
 /* ════════════════════════════════
    RESIZE
@@ -318,14 +315,10 @@ function rarc(ctx, cx, cy, r, ph, arc, lw, c0, c1) {
   const span = arc * 6.283;
   ctx.beginPath();
   ctx.arc(cx, cy, r, ph, ph + span);
-  const gx1 = cx+Math.cos(ph)*r,   gy1 = cy+Math.sin(ph)*r;
-  const gx2 = cx+Math.cos(ph+span)*r, gy2 = cy+Math.sin(ph+span)*r;
-  const g = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-  g.addColorStop(0, c0); g.addColorStop(1, c1);
-  ctx.strokeStyle = g; ctx.lineWidth = lw; ctx.stroke();
-  /* head dot */
+  ctx.strokeStyle = c1; ctx.lineWidth = lw; ctx.stroke();
   const hx = cx+Math.cos(ph+span)*r, hy = cy+Math.sin(ph+span)*r;
-  rglow(ctx, hx, hy, lw*1.8+2, 'rgba(185,242,255,.85)', 'rgba(0,135,252,0)');
+  ctx.beginPath(); ctx.arc(hx, hy, lw+1.5, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(185,242,255,.7)'; ctx.fill();
 }
 
 /* ════════════════════════════════
@@ -619,24 +612,19 @@ function renderNet() {
   conns.forEach(({a, b}) => {
     const pulse = Math.max(a.pw, b.pw) * .38;
     const alpha = .048 + pulse*.065;
-    const g = gNet.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0,  `rgba(0,88,208,${alpha*1.2})`);
-    g.addColorStop(.5, `rgba(0,112,242,${alpha*1.7})`);
-    g.addColorStop(1,  `rgba(0,88,208,${alpha*1.2})`);
     gNet.beginPath(); gNet.moveTo(a.x, a.y); gNet.lineTo(b.x, b.y);
-    gNet.strokeStyle = g; gNet.lineWidth = .48 + pulse*.65;
+    gNet.strokeStyle = `rgba(0,100,220,${alpha*1.5})`;
+    gNet.lineWidth = .48 + pulse*.65;
     gNet.setLineDash([4,9]); gNet.stroke(); gNet.setLineDash([]);
   });
 
   /* Sat tether lines */
   sats.forEach(sat => {
     const hub = hubs[sat.pid];
-    const a   = .026 + sat.glow*.048;
-    const g = gNet.createLinearGradient(hub.x, hub.y, sat.x, sat.y);
-    g.addColorStop(0, `rgba(0,102,222,${a*1.3})`);
-    g.addColorStop(1, `rgba(0,76,185,${a})`);
+    const a = .026 + sat.glow*.048;
     gNet.beginPath(); gNet.moveTo(hub.x, hub.y); gNet.lineTo(sat.x, sat.y);
-    gNet.strokeStyle = g; gNet.lineWidth = .38;
+    gNet.strokeStyle = `rgba(0,90,200,${a})`;
+    gNet.lineWidth = .38;
     gNet.setLineDash([3,11]); gNet.stroke(); gNet.setLineDash([]);
   });
 
@@ -666,12 +654,9 @@ function renderNet() {
     const tx = co.x1+(co.x2-co.x1)*t0, ty = co.y1+(co.y2-co.y1)*t0;
 
     /* tail gradient */
-    const tg = gNet.createLinearGradient(tx, ty, px, py);
-    tg.addColorStop(0,   'rgba(0,98,248,0)');
-    tg.addColorStop(.5,  `rgba(0,145,248,${sig.bright*.35})`);
-    tg.addColorStop(1,   `rgba(0,212,252,${sig.bright})`);
     gNet.beginPath(); gNet.moveTo(tx, ty); gNet.lineTo(px, py);
-    gNet.strokeStyle = tg; gNet.lineWidth = 1.3; gNet.stroke();
+    gNet.strokeStyle = `rgba(0,200,252,${sig.bright*.7})`;
+    gNet.lineWidth = 1.3; gNet.stroke();
 
     /* head glow */
     rglow(gNet, px, py, 5.5, `rgba(78,210,252,${sig.bright})`, 'rgba(0,62,192,0)');
@@ -690,24 +675,17 @@ function renderNet() {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const nd = nodes[r] && nodes[r][c]; if (!nd) continue;
-      const md = Math.hypot(mouse.x-ox-nd.x, mouse.y-oy-nd.y);
-      const mB = clamp(1-md/90, 0, 1) * .40;
-      const tG = nd.glow + mB + wave*nd.bLum*.28;
-      if (tG > .04) {
-        const rr = 8.5 * clamp(tG, 0, 1.2);
-        const ng = gNet.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, rr);
-        ng.addColorStop(0,   `rgba(55,188,250,${clamp(tG*.80, 0, .88)})`);
-        ng.addColorStop(.45, `rgba(12,105,242,${clamp(tG*.28, 0, .38)})`);
-        ng.addColorStop(1,   'rgba(0,40,192,0)');
-        gNet.beginPath(); gNet.arc(nd.x, nd.y, rr, 0, Math.PI*2);
-        gNet.fillStyle = ng; gNet.fill();
-        if (nd.isNode) {
-          gNet.beginPath(); gNet.arc(nd.x, nd.y, 1.8, 0, Math.PI*2);
-          gNet.fillStyle = `rgba(165,238,255,${clamp(tG, 0, 1)})`; gNet.fill();
-          if (tG > .24) activeNodes++;
-        }
-      }
       nd.glow *= .952;
+      const tG = nd.glow + wave*nd.bLum*.28;
+      if (tG > .06 && nd.isNode) {
+        const rr = 7 * clamp(tG, 0, 1.2);
+        gNet.beginPath(); gNet.arc(nd.x, nd.y, rr, 0, Math.PI*2);
+        gNet.fillStyle = `rgba(55,188,250,${clamp(tG*.55, 0, .7)})`;
+        gNet.fill();
+        gNet.beginPath(); gNet.arc(nd.x, nd.y, 1.8, 0, Math.PI*2);
+        gNet.fillStyle = `rgba(165,238,255,${clamp(tG, 0, 1)})`; gNet.fill();
+        if (tG > .24) activeNodes++;
+      }
     }
   }
 
@@ -735,11 +713,11 @@ function renderFx() {
     const t0 = Math.max(0, sp.pos-.10);
     const tx = sp.x+(sp.tx-sp.x)*t0, ty = sp.y+(sp.ty-sp.y)*t0;
 
-    const tg = gFx.createLinearGradient(tx, ty, px, py);
-    tg.addColorStop(0, 'rgba(0,128,248,0)');
-    tg.addColorStop(1, `rgba(65,205,252,${sp.bright*.78})`);
+    const tg2 = gFx.createLinearGradient(tx, ty, px, py);
+    tg2.addColorStop(0, 'rgba(0,128,248,0)');
+    tg2.addColorStop(1, `rgba(65,205,252,${sp.bright*.78})`);
     gFx.beginPath(); gFx.moveTo(tx, ty); gFx.lineTo(px, py);
-    gFx.strokeStyle = tg; gFx.lineWidth = 1.8; gFx.stroke();
+    gFx.strokeStyle = tg2; gFx.lineWidth = 1.8; gFx.stroke();
     rglow(gFx, px, py, 9, `rgba(140,228,252,${sp.bright})`, 'rgba(0,108,248,0)');
     gFx.beginPath(); gFx.arc(px, py, 2.5, 0, Math.PI*2);
     gFx.fillStyle = `rgba(210,248,255,${sp.bright})`; gFx.fill();
@@ -763,20 +741,11 @@ function renderFx() {
     const r     = rp.maxR * eased;
     const a     = rp.life;
 
-    // Draw ripple arc-by-arc, skipping segments inside cards
-    const steps = 120;
-    for (let i = 0; i < steps; i++) {
-      const ang1 = (i / steps) * Math.PI * 2;
-      const ang2 = ((i+1) / steps) * Math.PI * 2;
-      const px = rp.x + Math.cos(ang1) * r;
-      const py = rp.y + Math.sin(ang1) * r;
-      if (pointInCard(px, py, 0)) continue;
-      gFx.beginPath();
-      gFx.arc(rp.x, rp.y, r, ang1, ang2);
-      gFx.strokeStyle = `rgba(0,188,248,${a*.75})`;
-      gFx.lineWidth = 1.7 * rp.life;
-      gFx.stroke();
-    }
+    gFx.beginPath();
+    gFx.arc(rp.x, rp.y, r, 0, Math.PI*2);
+    gFx.strokeStyle = `rgba(0,188,248,${a*.75})`;
+    gFx.lineWidth = 1.7 * rp.life;
+    gFx.stroke();
     if (a > .58) rglow(gFx, rp.x, rp.y, r*.30, `rgba(0,168,248,${(a-.58)*.10})`, 'rgba(0,85,248,0)');
 
     rp.life -= .010;
@@ -901,7 +870,7 @@ function updateHUD() {
 function loop() {
   frame++;
   updateActivity();
-  if (frame % 30 === 0) updateCards();
+  if (frame % 120 === 0) updateCards();
   /* smooth parallax */
   plx.x += (plx.tx - plx.x) * .036;
   plx.y += (plx.ty - plx.y) * .036;
@@ -922,19 +891,12 @@ function loop() {
 /* ════════════════════════════════
    EVENTS
 ════════════════════════════════ */
-wrap.addEventListener('mousemove', e => {
-  mouse.x = e.clientX; mouse.y = e.clientY;
-  plx.tx  = (e.clientX - W/2) * .36;
-  plx.ty  = (e.clientY - H/2) * .36;
-});
-wrap.addEventListener('mouseleave', () => { mouse.x = -1e5; mouse.y = -1e5; });
-
-// Track mouse even over cards
 window.addEventListener('mousemove', e => {
   mouse.x = e.clientX; mouse.y = e.clientY;
   plx.tx  = (e.clientX - W/2) * .36;
   plx.ty  = (e.clientY - H/2) * .36;
 });
+wrap.addEventListener('mouseleave', () => { mouse.x = -1e5; mouse.y = -1e5; });
 
 function triggerRipple(cx, cy) {
   const maxR = Math.min(W,H) * .22;
@@ -970,7 +932,6 @@ function triggerRipple(cx, cy) {
 }
 
 wrap.addEventListener('click', e => triggerRipple(e.clientX, e.clientY));
-window.addEventListener('click', e => triggerRipple(e.clientX, e.clientY));
 
 let _rt;
 window.addEventListener('resize', () => {

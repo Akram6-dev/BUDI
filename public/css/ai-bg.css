@@ -1,6 +1,10 @@
 /* AI Circuit Background */
-#ai-bg { position: fixed; inset: 0; z-index: 0; cursor: crosshair; background: #020810; }
-#ai-bg canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+#ai-bg { position: fixed; inset: 0; z-index: 0; cursor: crosshair; background: #020810; transition: background 0.4s ease; }
+#ai-bg canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; transition: filter 0.4s ease; }
+
+/* Light mode */
+html.light-mode #ai-bg { background: #0e1f35; }
+html.light-mode #ai-bg canvas { filter: brightness(1.35) saturate(1.2) hue-rotate(10deg); }
 
 /* HUD */
 #hud { position: fixed; inset: 0; pointer-events: none; font-family: 'Courier New', monospace; z-index: 1; }

@@ -814,3 +814,160 @@ body.guest-form-body .form-message {
         height: 6px;
     }
 }
+
+/* ===== THEME TOGGLE BUTTON ===== */
+.btn-theme-toggle {
+    background: rgba(0, 60, 90, 0.35);
+    border: 1px solid rgba(0, 200, 255, 0.22);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    line-height: 0;
+    color: #7dd3fc;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-theme-toggle:hover {
+    background: rgba(0, 100, 140, 0.45);
+    color: #ffffff;
+    transform: rotate(20deg);
+}
+
+.btn-theme-toggle svg {
+    transition: transform 0.4s ease, opacity 0.25s ease;
+}
+
+/* ===== LIGHT MODE OVERRIDES ===== */
+html.light-mode body.guest-form-body {
+    background-color: transparent !important;
+}
+
+html.light-mode .navbar-form {
+    background: linear-gradient(180deg, rgba(18, 38, 62, 0.97) 0%, rgba(14, 30, 52, 0.95) 100%);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+html.light-mode .navbar-form .nav-title {
+    color: #bae6fd;
+    text-shadow: none;
+}
+
+html.light-mode .navbar-form .btn-login {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #bae6fd;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+html.light-mode .navbar-form .btn-login:hover {
+    background-color: rgba(56, 189, 248, 0.25);
+    color: #ffffff;
+}
+
+html.light-mode .btn-theme-toggle {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.35);
+}
+
+html.light-mode .step-title {
+    color: #bae6fd;
+    text-shadow: 0 0 18px rgba(56, 189, 248, 0.2);
+}
+
+html.light-mode .progress-bar-container {
+    background-color: rgba(15, 35, 58, 0.8);
+}
+
+html.light-mode .form-card {
+    background: linear-gradient(165deg, rgba(18, 42, 72, 0.96) 0%, rgba(12, 28, 52, 0.97) 55%, rgba(16, 36, 64, 0.96) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+html.light-mode .form-card-title {
+    color: #e0f2fe;
+}
+
+html.light-mode .form-label {
+    color: rgba(186, 230, 253, 0.9);
+}
+
+html.light-mode .form-input,
+html.light-mode .form-select {
+    color: #e0f2fe;
+    border-bottom-color: rgba(56, 189, 248, 0.35);
+}
+
+html.light-mode .form-input::placeholder {
+    color: rgba(148, 200, 230, 0.45);
+}
+
+html.light-mode .form-input:focus,
+html.light-mode .form-select:focus {
+    border-bottom-color: #38bdf8;
+}
+
+html.light-mode .status-card {
+    background-color: rgba(14, 32, 56, 0.75);
+    border-color: rgba(56, 189, 248, 0.2);
+}
+
+html.light-mode .status-card:hover {
+    background-color: rgba(20, 44, 76, 0.85);
+    border-color: rgba(56, 189, 248, 0.55);
+    box-shadow: 0 4px 18px rgba(56, 189, 248, 0.15);
+}
+
+html.light-mode .status-card.active {
+    background-color: rgba(22, 52, 90, 0.8);
+    border-color: #38bdf8;
+    box-shadow: 0 4px 18px rgba(56, 189, 248, 0.22);
+}
+
+html.light-mode .status-card-label {
+    color: #7dd3fc;
+}
+
+html.light-mode .photo-notice {
+    background-color: rgba(12, 28, 50, 0.75);
+    border-color: rgba(56, 189, 248, 0.12);
+    color: rgba(186, 230, 253, 0.88);
+}
+
+html.light-mode .btn-secondary {
+    background-color: rgba(56, 189, 248, 0.1);
+    color: #bae6fd;
+    border-color: rgba(56, 189, 248, 0.28);
+}
+
+html.light-mode .btn-secondary:hover {
+    background-color: rgba(56, 189, 248, 0.2);
+    color: #ffffff;
+}
+
+html.light-mode .signature-canvas {
+    background-color: #0f2033;
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+html.light-mode .signature-instruction {
+    color: rgba(148, 190, 220, 0.45);
+}
+
+html.light-mode .camera-fallback {
+    background: rgba(12, 28, 50, 0.92);
+    color: #bae6fd;
+}
+
+html.light-mode .footer-form {
+    background: linear-gradient(0deg, rgba(10, 22, 40, 0.98) 0%, rgba(16, 32, 56, 0.96) 100%);
+    color: rgba(148, 200, 230, 0.72);
+    border-top: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+html.light-mode #hud {
+    opacity: 0.15;
+}
