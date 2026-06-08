@@ -81,64 +81,13 @@ body.guest-form-body::-webkit-scrollbar-thumb:active {
     pointer-events: auto;
 }
 
-/* Lapisan grid + “arus” listrik di background */
+/* Lapisan grid (tanpa efek mengkilap) */
 .main-content-form::before {
-    content: "";
-    position: absolute;
-    inset: -50%;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-        linear-gradient(
-            105deg,
-            transparent 0%,
-            transparent 42%,
-            rgba(0, 255, 220, 0.06) 48%,
-            rgba(120, 220, 255, 0.14) 50%,
-            rgba(0, 255, 220, 0.06) 52%,
-            transparent 58%,
-            transparent 100%
-        ),
-        repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 31px,
-            rgba(0, 200, 255, 0.04) 31px,
-            rgba(0, 200, 255, 0.04) 32px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 31px,
-            rgba(0, 200, 255, 0.035) 31px,
-            rgba(0, 200, 255, 0.035) 32px
-        );
-    background-size: 220% 100%, 100% 100%, 100% 100%;
-    animation: iot-streak-drift 9s linear infinite;
-    opacity: 0.85;
+    display: none;
 }
 
 .main-content-form::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background:
-        radial-gradient(circle at 12% 25%, rgba(0, 255, 230, 0.07) 0%, transparent 28%),
-        radial-gradient(circle at 88% 70%, rgba(130, 100, 255, 0.08) 0%, transparent 32%),
-        linear-gradient(
-            25deg,
-            transparent 48%,
-            rgba(0, 240, 255, 0.04) 49.5%,
-            rgba(0, 240, 255, 0.09) 50%,
-            rgba(0, 240, 255, 0.04) 50.5%,
-            transparent 52%
-        );
-    background-size: 100% 100%, 100% 100%, 300% 300%;
-    animation: iot-pulse-lines 5.5s ease-in-out infinite, iot-diagonal-sweep 14s linear infinite;
-    mix-blend-mode: screen;
-    opacity: 0.75;
+    display: none;
 }
 
 .main-content-form > * {
