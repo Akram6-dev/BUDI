@@ -781,8 +781,10 @@
                                 <input type="text" class="filter-input" id="student-search-nama" placeholder="Masukkan nama siswa">
                             </div>
                             <div class="filter-item">
-                                <label class="filter-label">Cari Kelas</label>
-                                <input type="text" class="filter-input" id="student-search-kelas" placeholder="Masukkan kelas">
+                                <label class="filter-label">Filter Kelas</label>
+                                <select class="filter-input" id="student-search-kelas">
+                                    <option value="">Semua Kelas</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -882,6 +884,10 @@
             document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
             const targetBtn = evt?.currentTarget || evt?.target;
             if (targetBtn) targetBtn.classList.add('active');
+            
+            if (section === 'student') {
+                loadClasses();
+            }
 
             if (section === 'teacher') {
                 loadTeachers();
@@ -932,6 +938,25 @@
                     currentData = data.data;
                     document.getElementById('student-count').innerText = data.count;
                     renderStudentsTable(data.data);
+                });
+        }
+
+        // Load unique classes for filter
+        function loadClasses() {
+            fetch('/api/classes')
+                .then(r => r.json())
+                .then(classes => {
+                    const select = document.getElementById('student-search-kelas');
+                    const currentValue = select.value;
+                    
+                    select.innerHTML = '<option value="">Semua Kelas</option>';
+                    classes.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c;
+                        option.textContent = c;
+                        if (c === currentValue) option.selected = true;
+                        select.appendChild(option);
+                    });
                 });
         }
 
@@ -1099,6 +1124,7 @@
                         loadTeachers();
                     } else {
                         loadStudents();
+                        loadClasses();
                     }
                     alert('Data berhasil diperbarui');
                 }
@@ -1123,6 +1149,7 @@
                         loadTeachers();
                     } else {
                         loadStudents();
+                        loadClasses();
                     }
                     alert('Data berhasil dihapus');
                 }
@@ -1164,7 +1191,7 @@
             }
             document.getElementById('teacher-search').addEventListener('keyup', () => debounce(loadTeachers));
             document.getElementById('student-search-nama').addEventListener('keyup', () => debounce(loadStudents));
-            document.getElementById('student-search-kelas').addEventListener('keyup', () => debounce(loadStudents));
+            document.getElementById('student-search-kelas').addEventListener('change', () => loadStudents());
 
             document.getElementById('previewModal').addEventListener('click', function(e) {
                 if (e.target === this) closePreviewModal();

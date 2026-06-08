@@ -110,6 +110,19 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getClasses()
+    {
+        $classes = Tamu::where('status', 'siswa')
+            ->whereNotNull('kelas')
+            ->where('kelas', '!=', '')
+            ->distinct()
+            ->pluck('kelas')
+            ->sort()
+            ->values();
+
+        return response()->json($classes);
+    }
+
     public function getData($id)
     {
         $data = Tamu::findOrFail($id);

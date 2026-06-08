@@ -57,7 +57,7 @@
                         id="classSelect" 
                         name="class"
                         class="form-input"
-                        placeholder="Pilih atau ketik kelas Anda"
+                        placeholder="X PPLG 2"
                         list="classList"
                         value="{{ session('tamu.kelas') }}"
                     >
