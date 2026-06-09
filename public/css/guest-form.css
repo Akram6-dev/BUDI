@@ -898,12 +898,12 @@ html.light-mode .btn-secondary:hover {
 }
 
 html.light-mode .signature-canvas {
-    background-color: #0f2033;
+    background-color: #ffffff;
     border-color: rgba(56, 189, 248, 0.3);
 }
 
 html.light-mode .signature-instruction {
-    color: rgba(148, 190, 220, 0.45);
+    color: rgba(17, 24, 39, 0.45);
 }
 
 html.light-mode .camera-fallback {

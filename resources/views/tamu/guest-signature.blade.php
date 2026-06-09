@@ -73,14 +73,20 @@
             let isDrawing = false;
             let hasSignature = false;
 
+            function prepareCanvas() {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+            }
+
             // Set canvas size
             function resizeCanvas() {
                 canvas.width = canvas.offsetWidth;
                 canvas.height = canvas.offsetHeight;
-                ctx.strokeStyle = '#514532';
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
+                prepareCanvas();
             }
 
             resizeCanvas();
@@ -91,6 +97,7 @@
             if (savedTTD) {
                 const img = new Image();
                 img.onload = function() {
+                    prepareCanvas();
                     ctx.drawImage(img, 0, 0);
                     hasSignature = true;
                     updateButtons();
@@ -162,7 +169,7 @@
 
             // Clear button
             clearBtn.addEventListener('click', () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                prepareCanvas();
                 hasSignature = false;
                 sessionStorage.removeItem('savedSignature');
                 updateButtons();

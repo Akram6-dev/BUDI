@@ -8,25 +8,46 @@
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111827; }
         .title { text-align: center; font-size: 18px; font-weight: 800; margin: 4px 0 2px; letter-spacing: 0.3px; }
         .meta { text-align: center; font-size: 10px; color: #6b7280; margin-bottom: 14px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #d1d5db; padding: 6px 6px; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #d1d5db; padding: 6px 6px; vertical-align: middle; }
         th { background: #f3f4f6; font-weight: 700; text-align: left; }
         .col-no { width: 36px; text-align: center; }
-        .col-nama { width: 180px; }
-        .col-kelas { width: 110px; }
-        .col-status { width: 70px; text-transform: uppercase; }
-        .col-img { width: 160px; }
-        .img-box { width: 150px; height: 110px; border: 1px solid #e5e7eb; background: #ffffff; overflow: hidden; }
-        .img-box img { width: 100%; height: 100%; object-fit: contain; }
-        .ttd-box { width: 150px; height: 70px; border: 1px solid #e5e7eb; background: #ffffff; overflow: hidden; display: grid; place-items: center; padding: 4px; }
-        .ttd-box img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        .col-nama { width: 180px; text-align: center; }
+        .col-kelas { width: 105px; text-align: center; }
+        .col-status { width: 70px; text-align: center; text-transform: uppercase; }
+        .col-img { width: 155px; text-align: center; vertical-align: middle; }
+        .img-cell, .ttd-cell { text-align: center; vertical-align: middle; }
+        .img-box,
+        .ttd-box {
+            margin: 0 auto;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            overflow: hidden;
+            text-align: center;
+            display: table;
+        }
+        .img-box { width: 138px; height: 104px; }
+        .ttd-box { width: 138px; height: 72px; padding: 4px; }
+        .media-align {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .img-box img,
+        .ttd-box img {
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+        .img-box img { max-width: 138px; max-height: 104px; }
+        .ttd-box img { max-width: 130px; max-height: 64px; }
         .section-label { text-align: center; font-size: 11px; font-weight: 700; color: #374151; margin-top: 2px; }
     </style>
 </head>
 <body>
     <div class="title">{{ $title }}</div>
     <div class="section-label">
-        {{ $section === 'student' ? 'SISWA' : 'GURU' }}
+        {{ $sectionLabel ?? ($section === 'student' ? 'SISWA' : 'GURU') }}
     </div>
     <div class="meta">
         Dicetak: {{ $generatedAt->format('d/m/Y H:i') }}
@@ -54,14 +75,18 @@
                     <td class="col-kelas">{{ $row['kelas'] }}</td>
                 @endif
                 <td class="col-status">{{ $row['status'] }}</td>
-                <td class="col-img">
+                <td class="col-img img-cell">
                     <div class="img-box">
-                        <img src="{{ $row['foto_data_uri'] }}" alt="Foto">
+                        <div class="media-align">
+                            <img src="{{ $row['foto_data_uri'] }}" alt="Foto">
+                        </div>
                     </div>
                 </td>
-                <td class="col-img">
+                <td class="col-img ttd-cell">
                     <div class="ttd-box">
-                        <img src="{{ $row['ttd_data_uri'] }}" alt="Tanda Tangan">
+                        <div class="media-align">
+                            <img src="{{ $row['ttd_data_uri'] }}" alt="Tanda Tangan">
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -76,4 +101,3 @@
     </table>
 </body>
 </html>
-

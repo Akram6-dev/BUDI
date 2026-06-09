@@ -256,16 +256,27 @@ class AdminController extends Controller
             ];
         });
 
+        $classFilter = $isStudent ? trim((string) $request->get('search_kelas', '')) : '';
+        $sectionLabel = $isStudent
+            ? 'SISWA' . ($classFilter !== '' ? ' ' . strtoupper($classFilter) : '')
+            : 'GURU';
+
         $pdf = Pdf::loadView('admin.export-pdf', [
             'title' => 'DAFTAR KEHADIRAN',
             'section' => $section,
+            'sectionLabel' => $sectionLabel,
             'rows' => $rows,
             'generatedAt' => now(),
         ])->setPaper('a4', 'landscape');
 
-        $filename = $section === 'student'
-            ? 'daftar-kehadiran-siswa.pdf'
-            : 'daftar-kehadiran-guru.pdf';
+        if ($isStudent) {
+            $classSlug = $classFilter !== ''
+                ? '-' . str($classFilter)->lower()->replaceMatches('/[^a-z0-9]+/', '-')->trim('-')
+                : '';
+            $filename = 'daftar-kehadiran-siswa' . $classSlug . '.pdf';
+        } else {
+            $filename = 'daftar-kehadiran-guru.pdf';
+        }
 
         return $pdf->download($filename);
     }
