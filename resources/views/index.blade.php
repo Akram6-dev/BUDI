@@ -98,7 +98,7 @@
         function buildStars(){
             stars = [];
             for(let i=0;i<90;i++){
-                stars.push({ x:rnd(0,W), y:rnd(0,H), r:rnd(0.3,1.1), a:rnd(0.05,0.28), phase:rnd(0,Math.PI*2), spd:rnd(0.006,0.018) });
+                stars.push({ x:rnd(0,W), y:rnd(0,H), r:rnd(0.3,1.1), a:rnd(0.05,0.28), phase:rnd(0,Math.PI*2), spd:rnd(0.002,0.006) });
             }
         }
 
@@ -120,13 +120,13 @@
             const g = Math.random();
             return {
                 segs, tipX:curX, tipY:totalH,
-                phase:'draw', drawProgress:0, drawSpeed:rnd(0.010,0.022),
-                holdTimer:0, holdDuration:rnd(40,90),
-                fadeAlpha:1, fadeSpeed:rnd(0.015,0.028),
+                phase:'draw', drawProgress:0, drawSpeed:rnd(0.002,0.005),
+                holdTimer:0, holdDuration:rnd(120,240),
+                fadeAlpha:1, fadeSpeed:rnd(0.005,0.010),
                 baseAlpha:rnd(0.35,0.65),
                 isSuper:g<0.08, isGlow:g<0.25,
-                nodeR:rnd(3.5,5.5), pulse:rnd(0,Math.PI*2), pulseSpd:rnd(0.015,0.035),
-                flowT:0, flowSpd:rnd(0.014,0.026), dead:false
+                nodeR:rnd(3.5,5.5), pulse:rnd(0,Math.PI*2), pulseSpd:rnd(0.005,0.015),
+                flowT:0, flowSpd:rnd(0.003,0.006), dead:false
             };
         }
 
