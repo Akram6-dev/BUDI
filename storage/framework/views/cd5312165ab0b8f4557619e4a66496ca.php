@@ -683,6 +683,86 @@
             /* Override global footer styles */
             position: relative !important;
         }
+
+        /* Alphabet Filter Styles */
+        .alphabet-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.75rem;
+            width: 100%;
+        }
+
+        .alphabet-btn {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .alphabet-btn:hover {
+            background: #e5e7eb;
+            color: #111827;
+            transform: translateY(-1px);
+        }
+
+        .alphabet-btn.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Sort Button Styles */
+        .sort-btn {
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #ffffff;
+            color: #374151;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .sort-btn:hover {
+            background: #f9fafb;
+            border-color: #cbd5e1;
+            color: #111827;
+        }
+
+        .sort-btn.active {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* Table Row Fade In Animation */
+        @keyframes tableRowFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        table tbody tr {
+            animation: tableRowFadeIn 0.25s ease forwards;
+        }
     </style>
 </head>
 <body>
@@ -742,9 +822,16 @@
                         </div>
 
                         <div class="filter-group">
-                            <div class="filter-item">
+                            <div class="filter-item" style="flex: 1; min-width: 250px;">
                                 <label class="filter-label">Cari Nama Guru</label>
-                                <input type="text" class="filter-input" id="teacher-search" placeholder="Masukkan nama guru">
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" class="filter-input" id="teacher-search" placeholder="Masukkan nama guru">
+                                    <button type="button" id="teacher-sort-btn" class="sort-btn" onclick="toggleTeacherSort()" title="Urutan: Default (Klik untuk A - Z)">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m15 9-3-3-3 3M9 15l3 3 3-3"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -776,11 +863,18 @@
                         </div>
 
                         <div class="filter-group">
-                            <div class="filter-item">
+                            <div class="filter-item" style="flex: 2; min-width: 250px;">
                                 <label class="filter-label">Cari Nama Siswa</label>
-                                <input type="text" class="filter-input" id="student-search-nama" placeholder="Masukkan nama siswa">
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" class="filter-input" id="student-search-nama" placeholder="Masukkan nama siswa">
+                                    <button type="button" id="student-sort-btn" class="sort-btn" onclick="toggleStudentSort()" title="Urutan: Default (Klik untuk A - Z)">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m15 9-3-3-3 3M9 15l3 3 3-3"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="filter-item">
+                            <div class="filter-item" style="flex: 1; min-width: 150px;">
                                 <label class="filter-label">Filter Kelas</label>
                                 <select class="filter-input" id="student-search-kelas">
                                     <option value="">Semua Kelas</option>
@@ -875,6 +969,8 @@
     <script>
         let currentData = [];
         let currentSection = 'teacher';
+        let teacherSort = ''; // '', 'asc', 'desc'
+        let studentSort = ''; // '', 'asc', 'desc'
 
         // Switch between sections
         function switchSection(section, evt) {
@@ -919,7 +1015,7 @@
         // Load teachers
         function loadTeachers() {
             const search = document.getElementById('teacher-search').value;
-            fetch(`/api/teachers?search=${search}`)
+            fetch(`/api/teachers?search=${search}&sort=${teacherSort}`)
                 .then(r => r.json())
                 .then(data => {
                     currentData = data.data;
@@ -932,13 +1028,55 @@
         function loadStudents() {
             const searchNama = document.getElementById('student-search-nama').value;
             const searchKelas = document.getElementById('student-search-kelas').value;
-            fetch(`/api/students?search_nama=${searchNama}&search_kelas=${searchKelas}`)
+            fetch(`/api/students?search_nama=${searchNama}&search_kelas=${searchKelas}&sort=${studentSort}`)
                 .then(r => r.json())
                 .then(data => {
                     currentData = data.data;
                     document.getElementById('student-count').innerText = data.count;
                     renderStudentsTable(data.data);
                 });
+        }
+
+        function toggleTeacherSort() {
+            const btn = document.getElementById('teacher-sort-btn');
+            if (teacherSort === '') {
+                teacherSort = 'asc';
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4M7 20V4 M16 10V6a2 2 0 0 1 4 0v4 M16 8h4 M16 14h4l-4 6h4"/></svg>`;
+                btn.classList.add('active');
+                btn.title = "Urutan: A - Z (Klik untuk Z - A)";
+            } else if (teacherSort === 'asc') {
+                teacherSort = 'desc';
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 4-4 4 4M7 4v16 M16 6h4l-4 6h4 M16 20V16a2 2 0 0 1 4 0v4 M16 18h4"/></svg>`;
+                btn.classList.add('active');
+                btn.title = "Urutan: Z - A (Klik untuk Default)";
+            } else {
+                teacherSort = '';
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 9-3-3-3 3M9 15l3 3 3-3"/></svg>`;
+                btn.classList.remove('active');
+                btn.title = "Urutan: Default (Klik untuk A - Z)";
+            }
+            loadTeachers();
+        }
+
+        function toggleStudentSort() {
+            const btn = document.getElementById('student-sort-btn');
+            if (studentSort === '') {
+                studentSort = 'asc';
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4M7 20V4 M16 10V6a2 2 0 0 1 4 0v4 M16 8h4 M16 14h4l-4 6h4"/></svg>`;
+                btn.classList.add('active');
+                btn.title = "Urutan: A - Z (Klik untuk Z - A)";
+            } else if (studentSort === 'asc') {
+                studentSort = 'desc';
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 4-4 4 4M7 4v16 M16 6h4l-4 6h4 M16 20V16a2 2 0 0 1 4 0v4 M16 18h4"/></svg>`;
+                btn.classList.add('active');
+                btn.title = "Urutan: Z - A (Klik untuk Default)";
+            } else {
+                studentSort = '';
+                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 9-3-3-3 3M9 15l3 3 3-3"/></svg>`;
+                btn.classList.remove('active');
+                btn.title = "Urutan: Default (Klik untuk A - Z)";
+            }
+            loadStudents();
         }
 
         // Load unique classes for filter
@@ -1165,11 +1303,13 @@
             if (currentSection === 'teacher') {
                 const search = document.getElementById('teacher-search')?.value || '';
                 if (search) params.set('search', search);
+                if (teacherSort) params.set('sort', teacherSort);
             } else {
                 const searchNama = document.getElementById('student-search-nama')?.value || '';
                 const searchKelas = document.getElementById('student-search-kelas')?.value || '';
                 if (searchNama) params.set('search_nama', searchNama);
                 if (searchKelas) params.set('search_kelas', searchKelas);
+                if (studentSort) params.set('sort', studentSort);
             }
 
             window.location.href = `/admin/export-pdf?${params.toString()}`;

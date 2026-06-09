@@ -60,6 +60,17 @@ class AdminController extends Controller
             $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
+        if ($request->filled('letter')) {
+            $query->where('nama', 'like', $request->letter . '%');
+        }
+
+        if ($request->filled('sort')) {
+            $sortVal = $request->sort;
+            if (in_array($sortVal, ['asc', 'desc'])) {
+                $query->orderBy('nama', $sortVal);
+            }
+        }
+
         $teachers = $query->get();
         $count = $teachers->count();
 
@@ -89,6 +100,17 @@ class AdminController extends Controller
 
         if ($request->filled('search_kelas')) {
             $query->where('kelas', 'like', '%' . $request->search_kelas . '%');
+        }
+
+        if ($request->filled('letter')) {
+            $query->where('nama', 'like', $request->letter . '%');
+        }
+
+        if ($request->filled('sort')) {
+            $sortVal = $request->sort;
+            if (in_array($sortVal, ['asc', 'desc'])) {
+                $query->orderBy('nama', $sortVal);
+            }
         }
 
         $students = $query->get();
@@ -180,7 +202,22 @@ class AdminController extends Controller
             }
         }
 
-        $items = $query->orderBy('created_at', 'desc')->get();
+        if ($request->filled('letter')) {
+            $query->where('nama', 'like', $request->letter . '%');
+        }
+
+        if ($request->filled('sort')) {
+            $sortVal = $request->sort;
+            if (in_array($sortVal, ['asc', 'desc'])) {
+                $query->orderBy('nama', $sortVal);
+            } else {
+                $query->orderBy('created_at', 'desc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $items = $query->get();
 
         $whitePngDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO9WlWcAAAAASUVORK5CYII=';
         $toDataUri = function (?string $relativePath) use ($whitePngDataUri): string {
