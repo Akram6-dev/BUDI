@@ -134,12 +134,14 @@
                     return;
                 }
 
-                canvasEl.width = videoEl.videoWidth;
-                canvasEl.height = videoEl.videoHeight;
+                const maxWidth = 640;
+                const scale = Math.min(maxWidth / videoEl.videoWidth, 1);
+                canvasEl.width = Math.round(videoEl.videoWidth * scale);
+                canvasEl.height = Math.round(videoEl.videoHeight * scale);
                 const context = canvasEl.getContext('2d');
                 context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
 
-                const imageData = canvasEl.toDataURL('image/png');
+                const imageData = canvasEl.toDataURL('image/jpeg', 0.72);
                 const capturedImage = document.createElement('img');
                 capturedImage.src = imageData;
                 capturedImage.className = 'captured-photo';

@@ -11,6 +11,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
+    private const BLANK_PNG_DATA_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO9WlWcAAAAASUVORK5CYII=';
+
     public function loginPage()
     {
         if (Session::get('admin_logged_in')) {
@@ -184,6 +186,8 @@ class AdminController extends Controller
             return redirect('/login');
         }
 
+        @set_time_limit(120);
+
         $section = $request->get('section', 'teacher');
         $isStudent = $section === 'student';
 
@@ -217,33 +221,9 @@ class AdminController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $items = $query->get();
+        $items = $query->get(['id', 'nama', 'kelas', 'status', 'foto', 'tanda_tangan']);
 
-        $whitePngDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO9WlWcAAAAASUVORK5CYII=';
-        $toDataUri = function (?string $relativePath) use ($whitePngDataUri): string {
-            if (!$relativePath) {
-                return $whitePngDataUri;
-            }
-
-            $relativePath = ltrim($relativePath, '/');
-            $fullPath = storage_path('app/public/' . $relativePath);
-            if (!is_file($fullPath)) {
-                return $whitePngDataUri;
-            }
-
-            $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
-            $mime = match ($ext) {
-                'jpg', 'jpeg' => 'image/jpeg',
-                'webp' => 'image/webp',
-                'gif' => 'image/gif',
-                default => 'image/png',
-            };
-
-            $data = base64_encode((string) file_get_contents($fullPath));
-            return "data:$mime;base64,$data";
-        };
-
-        $rows = $items->values()->map(function ($item, $index) use ($toDataUri, $whitePngDataUri) {
+        $rows = $items->values()->map(function ($item, $index) {
             $signaturePath = ($item->tanda_tangan ?? '') !== '' ? $item->tanda_tangan : null;
 
             return [
@@ -251,8 +231,8 @@ class AdminController extends Controller
                 'nama' => $item->nama,
                 'kelas' => $item->kelas,
                 'status' => $item->status,
-                'foto_data_uri' => $toDataUri(($item->foto ?? '') !== '' ? $item->foto : null),
-                'ttd_data_uri' => $signaturePath ? $toDataUri($signaturePath) : $whitePngDataUri,
+                'foto_data_uri' => $this->imageToDataUri(($item->foto ?? '') !== '' ? $item->foto : null, 220, 165, 68),
+                'ttd_data_uri' => $signaturePath ? $this->imageToDataUri($signaturePath, 220, 100, 78) : self::BLANK_PNG_DATA_URI,
             ];
         });
 
@@ -279,5 +259,92 @@ class AdminController extends Controller
         }
 
         return $pdf->download($filename);
+    }
+
+    private function imageToDataUri(?string $relativePath, int $maxWidth, int $maxHeight, int $quality): string
+    {
+        if (!$relativePath) {
+            return self::BLANK_PNG_DATA_URI;
+        }
+
+        $basePath = realpath(storage_path('app/public'));
+        $fullPath = realpath(storage_path('app/public/' . ltrim($relativePath, '/\\')));
+
+        if (!$basePath || !$fullPath || !str_starts_with($fullPath, $basePath) || !is_file($fullPath)) {
+            return self::BLANK_PNG_DATA_URI;
+        }
+
+        if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+            $optimized = $this->optimizedImageDataUri($fullPath, $maxWidth, $maxHeight, $quality);
+            if ($optimized !== null) {
+                return $optimized;
+            }
+        }
+
+        if (filesize($fullPath) > 120 * 1024) {
+            return self::BLANK_PNG_DATA_URI;
+        }
+
+        return $this->rawImageDataUri($fullPath);
+    }
+
+    private function optimizedImageDataUri(string $fullPath, int $maxWidth, int $maxHeight, int $quality): ?string
+    {
+        $contents = @file_get_contents($fullPath);
+        if ($contents === false) {
+            return null;
+        }
+
+        $source = @imagecreatefromstring($contents);
+        if (!$source) {
+            return null;
+        }
+
+        $sourceWidth = imagesx($source);
+        $sourceHeight = imagesy($source);
+        if ($sourceWidth <= 0 || $sourceHeight <= 0) {
+            imagedestroy($source);
+            return null;
+        }
+
+        $scale = min($maxWidth / $sourceWidth, $maxHeight / $sourceHeight, 1);
+        $targetWidth = max(1, (int) floor($sourceWidth * $scale));
+        $targetHeight = max(1, (int) floor($sourceHeight * $scale));
+
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+        $white = imagecolorallocate($target, 255, 255, 255);
+        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, $white);
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
+
+        ob_start();
+        imagejpeg($target, null, $quality);
+        $jpeg = ob_get_clean();
+
+        imagedestroy($source);
+        imagedestroy($target);
+
+        if ($jpeg === false || $jpeg === '') {
+            return null;
+        }
+
+        return 'data:image/jpeg;base64,' . base64_encode($jpeg);
+    }
+
+    private function rawImageDataUri(string $fullPath): string
+    {
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $mime = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+            default => 'image/png',
+        };
+
+        $data = @file_get_contents($fullPath);
+        if ($data === false) {
+            return self::BLANK_PNG_DATA_URI;
+        }
+
+        return "data:$mime;base64," . base64_encode($data);
     }
 }

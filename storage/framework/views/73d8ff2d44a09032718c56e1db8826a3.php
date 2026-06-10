@@ -15,7 +15,7 @@
         .col-nama { width: 180px; text-align: center; }
         .col-kelas { width: 105px; text-align: center; }
         .col-status { width: 70px; text-align: center; text-transform: uppercase; }
-        .col-img { width: 155px; text-align: center; vertical-align: middle; }
+        .col-img { width: 145px; text-align: center; vertical-align: middle; }
         .img-cell, .ttd-cell { text-align: center; vertical-align: middle; }
         .img-box,
         .ttd-box {
@@ -24,23 +24,16 @@
             background: #ffffff;
             overflow: hidden;
             text-align: center;
-            display: table;
         }
-        .img-box { width: 138px; height: 104px; }
-        .ttd-box { width: 138px; height: 72px; padding: 4px; }
-        .media-align {
-            display: table-cell;
-            text-align: center;
-            vertical-align: middle;
-        }
+        .img-box { width: 120px; height: 90px; padding: 3px; }
+        .ttd-box { width: 120px; height: 54px; padding: 3px; }
         .img-box img,
         .ttd-box img {
-            display: block;
             margin: 0 auto;
-            object-fit: contain;
+            vertical-align: middle;
         }
-        .img-box img { max-width: 138px; max-height: 104px; }
-        .ttd-box img { max-width: 130px; max-height: 64px; }
+        .img-box img { max-width: 120px; max-height: 90px; }
+        .ttd-box img { max-width: 120px; max-height: 54px; }
         .section-label { text-align: center; font-size: 11px; font-weight: 700; color: #374151; margin-top: 2px; }
     </style>
 </head>
@@ -79,16 +72,12 @@
                 <td class="col-status"><?php echo e($row['status']); ?></td>
                 <td class="col-img img-cell">
                     <div class="img-box">
-                        <div class="media-align">
-                            <img src="<?php echo e($row['foto_data_uri']); ?>" alt="Foto">
-                        </div>
+                        <img src="<?php echo e($row['foto_data_uri']); ?>" alt="Foto">
                     </div>
                 </td>
                 <td class="col-img ttd-cell">
                     <div class="ttd-box">
-                        <div class="media-align">
-                            <img src="<?php echo e($row['ttd_data_uri']); ?>" alt="Tanda Tangan">
-                        </div>
+                        <img src="<?php echo e($row['ttd_data_uri']); ?>" alt="Tanda Tangan">
                     </div>
                 </td>
             </tr>
