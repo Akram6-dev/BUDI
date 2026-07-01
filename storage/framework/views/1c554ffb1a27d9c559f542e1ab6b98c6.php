@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ambil Foto - Pameran TKI</title>
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/guest-form.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/welcome.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/guest-form.css')); ?>">
     <style>
         .camera-countdown {
             position: absolute;
@@ -39,8 +39,8 @@
 </head>
 <body class="guest-form-body">
 
-    @include('layouts.ai-bg')
-    @include('layouts.navbar')
+    <?php echo $__env->make('layouts.ai-bg', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('layouts.navbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <div class="main-content-form">
         <div class="step-container">
@@ -68,19 +68,19 @@
                 <!-- Camera Controls -->
                 <div class="camera-controls" id="cameraControls">
                     <button type="button" id="retryBtn" class="camera-btn camera-btn-secondary">
-                        <img src="{{ asset('img/ulang foto.svg') }}" alt="Ulang Foto" class="camera-icon">
+                        <img src="<?php echo e(asset('img/ulang foto.svg')); ?>" alt="Ulang Foto" class="camera-icon">
                     </button>
 
                     <button type="button" id="shutterBtn" class="camera-btn camera-btn-shutter" title="Jepret Foto">
                         <span class="shutter-ring outer"></span>
                         <span class="shutter-ring middle"></span>
                         <span class="shutter-ring inner">
-                            <img src="{{ asset('img/Foto.svg') }}" alt="Jepret" class="shutter-icon">
+                            <img src="<?php echo e(asset('img/Foto.svg')); ?>" alt="Jepret" class="shutter-icon">
                         </span>
                     </button>
 
                     <button type="button" id="flashBtn" class="camera-btn camera-btn-flash" title="Flash">
-                        <img src="{{ asset('img/flash.svg') }}" alt="Flash" class="camera-icon">
+                        <img src="<?php echo e(asset('img/flash.svg')); ?>" alt="Flash" class="camera-icon">
                     </button>
                 </div>
             </div>
@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    @include('layouts.footer')
+    <?php echo $__env->make('layouts.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -134,14 +134,12 @@
                     return;
                 }
 
-                const maxWidth = 640;
-                const scale = Math.min(maxWidth / videoEl.videoWidth, 1);
-                canvasEl.width = Math.round(videoEl.videoWidth * scale);
-                canvasEl.height = Math.round(videoEl.videoHeight * scale);
+                canvasEl.width = videoEl.videoWidth;
+                canvasEl.height = videoEl.videoHeight;
                 const context = canvasEl.getContext('2d');
                 context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
 
-                const imageData = canvasEl.toDataURL('image/jpeg', 0.72);
+                const imageData = canvasEl.toDataURL('image/png');
                 const capturedImage = document.createElement('img');
                 capturedImage.src = imageData;
                 capturedImage.className = 'captured-photo';
@@ -279,3 +277,4 @@
 
 </body>
 </html>
+<?php /**PATH D:\PROJECT\LARAVEL\BUDI\resources\views/tamu/guest-photo.blade.php ENDPATH**/ ?>

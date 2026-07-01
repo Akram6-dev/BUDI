@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Form Data Tamu - Pameran TKI</title>
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/guest-form.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/welcome.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/guest-form.css')); ?>">
 </head>
 <body class="guest-form-body">
 
-    @include('layouts.ai-bg')
-    @include('layouts.navbar')
+    <?php echo $__env->make('layouts.ai-bg', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('layouts.navbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <!-- Main Content -->
     <div class="main-content-form">
@@ -33,7 +33,7 @@
             <h1 class="form-card-title">Isi Identitas Anda</h1>
 
             <form id="guestForm" method="POST" action="/guest-form">
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <!-- Full Name Input -->
                 <div class="form-group">
@@ -44,7 +44,7 @@
                         name="full_name" 
                         class="form-input" 
                         placeholder="Masukkan nama lengkap Anda"
-                        value="{{ session('tamu.nama') }}"
+                        value="<?php echo e(session('tamu.nama')); ?>"
                         required
                     >
                 </div>
@@ -59,7 +59,7 @@
                         class="form-input"
                         placeholder="X PPLG 2"
                         list="classList"
-                        value="{{ session('tamu.kelas') }}"
+                        value="<?php echo e(session('tamu.kelas')); ?>"
                     >
                     <datalist id="classList">
                         <option value="X PPLG 1"></option>
@@ -78,7 +78,7 @@
                         <!-- Guru Option -->
                         <div class="status-card" data-status="guru">
                             <div class="status-card-image">
-                                <img src="{{ asset('img/guru.svg') }}" alt="Guru">
+                                <img src="<?php echo e(asset('img/guru.svg')); ?>" alt="Guru">
                             </div>
                             <span class="status-card-label">Guru</span>
                         </div>
@@ -86,7 +86,7 @@
                         <!-- Murid Option -->
                         <div class="status-card" data-status="murid">
                             <div class="status-card-image">
-                                <img src="{{ asset('img/murid.svg') }}" alt="Murid">
+                                <img src="<?php echo e(asset('img/murid.svg')); ?>" alt="Murid">
                             </div>
                             <span class="status-card-label">Murid</span>
                         </div>
@@ -108,7 +108,7 @@
         </div>
     </div>
 
-    @include('layouts.footer')
+    <?php echo $__env->make('layouts.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -118,7 +118,7 @@
             const classSelect = document.getElementById('classSelect');
 
             // Restore session state
-            const savedStatus = '{{ session('tamu.status') }}';
+            const savedStatus = '<?php echo e(session('tamu.status')); ?>';
             if (savedStatus) {
                 const savedCard = document.querySelector(`[data-status="${savedStatus === 'siswa' ? 'murid' : savedStatus}"]`);
                 if (savedCard) {
@@ -171,3 +171,4 @@
 
 </body>
 </html>
+<?php /**PATH D:\PROJECT\LARAVEL\BUDI\resources\views/tamu/guest-form.blade.php ENDPATH**/ ?>

@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pameran TKI - SMKN 1 Subang</title>
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/ai-bg.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/welcome.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/ai-bg.css')); ?>">
     <style>
         #bgWrap {
             position: fixed;
@@ -25,7 +25,7 @@
 <body>
 
     <!-- Success Alert -->
-    @if(session('success'))
+    <?php if(session('success')): ?>
     <div id="successAlert" style="
         position: fixed;
         top: 80px;
@@ -40,13 +40,13 @@
         z-index: 999;
         backdrop-filter: blur(6px);
         border: 1px solid rgba(255,184,0,0.4);
-    ">✓ {{ session('success') }}</div>
+    ">✓ <?php echo e(session('success')); ?></div>
     <script>
         setTimeout(() => {
             document.getElementById('successAlert').style.display = 'none';
         }, 4000);
     </script>
-    @endif
+    <?php endif; ?>
 
     <!-- Background -->
     <div id="bgWrap"><canvas id="bgCanvas"></canvas></div>
@@ -54,7 +54,7 @@
     <!-- Navbar -->
     <nav>
         <div class="nav-left">
-            <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo Nesasa" class="nav-logo">
+            <img src="<?php echo e(asset('img/Gambar_SMKN_1SUBANG.png')); ?>" alt="Logo Nesasa" class="nav-logo">
             <span class="nav-title">PAMERAN TKI</span>
         </div>
         <a href="/login" class="btn-login">Login Admin</a>
@@ -68,9 +68,9 @@
         </h1>
 
         <div class="logo-section">
-            <img src="{{ asset('img/LOGO RPL.png') }}" alt="Logo RPL" class="logo-school">
+            <img src="<?php echo e(asset('img/LOGO RPL.png')); ?>" alt="Logo RPL" class="logo-school">
             <span class="x-separator">✕</span>
-            <img src="{{ asset('img/LogoTKJ.png') }}" alt="Logo TKJ" class="logo-school">
+            <img src="<?php echo e(asset('img/LogoTKJ.png')); ?>" alt="Logo TKJ" class="logo-school">
         </div>
 
         <a href="/guest-form" class="btn-isi-data">Isi Data Tamu</a>
@@ -249,3 +249,4 @@
 
 </body>
 </html>
+<?php /**PATH D:\PROJECT\LARAVEL\BUDI\resources\views/index.blade.php ENDPATH**/ ?>

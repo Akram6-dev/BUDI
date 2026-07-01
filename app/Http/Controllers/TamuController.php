@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tamu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TamuController extends Controller
 {
@@ -41,27 +42,8 @@ class TamuController extends Controller
 
     public function submit(Request $request)
     {
-        // Proses foto dari base64
-        $fotoPath = null;
-        if ($request->filled('foto_base64')) {
-            $image = $request->foto_base64;
-            $image = str_replace('data:image/png;base64,', '', $image);
-            $image = base64_decode($image);
-            $filename = 'foto/' . uniqid() . '.png';
-            \Storage::disk('public')->put($filename, $image);
-            $fotoPath = $filename;
-        }
-
-        // Proses tanda tangan dari base64 (opsional)
-        $ttdPath = null;
-        if ($request->filled('tanda_tangan_base64')) {
-            $image = $request->tanda_tangan_base64;
-            $image = str_replace('data:image/png;base64,', '', $image);
-            $image = base64_decode($image);
-            $filename = 'tanda_tangan/' . uniqid() . '.png';
-            \Storage::disk('public')->put($filename, $image);
-            $ttdPath = $filename;
-        }
+        $fotoPath = $this->storeBase64Image($request->input('foto_base64'), 'foto');
+        $ttdPath = $this->storeBase64Image($request->input('tanda_tangan_base64'), 'tanda_tangan');
 
         // Buat record di database
         Tamu::create([
@@ -75,5 +57,23 @@ class TamuController extends Controller
         session()->forget(['tamu.nama', 'tamu.status', 'tamu.kelas']);
 
         return redirect('/')->with('success', 'Data tamu berhasil disimpan!');
+    }
+
+    private function storeBase64Image(?string $dataUri, string $directory): ?string
+    {
+        if (!$dataUri || !preg_match('/^data:image\/(png|jpe?g|webp);base64,(.+)$/i', $dataUri, $matches)) {
+            return null;
+        }
+
+        $extension = strtolower($matches[1]) === 'jpeg' ? 'jpg' : strtolower($matches[1]);
+        $image = base64_decode($matches[2], true);
+        if ($image === false) {
+            return null;
+        }
+
+        $filename = $directory . '/' . uniqid('', true) . '.' . $extension;
+        Storage::disk('public')->put($filename, $image);
+
+        return $filename;
     }
 }

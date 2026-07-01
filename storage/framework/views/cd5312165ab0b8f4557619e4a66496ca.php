@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>Admin Dashboard - Pameran TKI</title>
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/guest-form.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/welcome.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/guest-form.css')); ?>">
     <style>
         * {
             margin: 0;
@@ -798,12 +798,12 @@
                             <path d="M4 6H20M4 12H20M4 18H20" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </button>
-                    <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang">
+                    <img src="<?php echo e(asset('img/Gambar_SMKN_1SUBANG.png')); ?>" alt="Logo SMKN 1 Subang">
                     <span>PAMERAN TKI - ADMIN</span>
                 </div>
                 <div class="navbar-right">
                     <form action="/logout" method="POST" style="display: inline;">
-                        @csrf
+                        <?php echo csrf_field(); ?>
                         <button type="submit" class="btn-logout">Logout</button>
                     </form>
                 </div>
@@ -1344,3 +1344,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\PROJECT\LARAVEL\BUDI\resources\views/admin/dashboard.blade.php ENDPATH**/ ?>

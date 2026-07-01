@@ -26,6 +26,7 @@ Route::get('/admin/export-pdf', [AdminController::class, 'exportPdf']);
 // Admin API for dashboard
 Route::get('/api/teachers', [AdminController::class, 'getTeachers']);
 Route::get('/api/students', [AdminController::class, 'getStudents']);
+Route::get('/api/classes', [AdminController::class, 'getClasses']);
 Route::get('/api/data/{id}', [AdminController::class, 'getData']);
 Route::put('/api/data/{id}', [AdminController::class, 'updateData']);
 Route::delete('/api/data/{id}', [AdminController::class, 'deleteData']);

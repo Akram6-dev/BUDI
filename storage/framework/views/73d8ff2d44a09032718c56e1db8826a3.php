@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>{{ $title }}</title>
+    <title><?php echo e($title); ?></title>
     <style>
         @page { margin: 20px 20px 24px; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111827; }
@@ -38,12 +38,14 @@
     </style>
 </head>
 <body>
-    <div class="title">{{ $title }}</div>
+    <div class="title"><?php echo e($title); ?></div>
     <div class="section-label">
-        {{ $sectionLabel ?? ($section === 'student' ? 'SISWA' : 'GURU') }}
+        <?php echo e($sectionLabel ?? ($section === 'student' ? 'SISWA' : 'GURU')); ?>
+
     </div>
     <div class="meta">
-        Dicetak: {{ $generatedAt->format('d/m/Y H:i') }}
+        Dicetak: <?php echo e($generatedAt->format('d/m/Y H:i')); ?>
+
     </div>
 
     <table>
@@ -51,42 +53,43 @@
             <tr>
                 <th class="col-no">ID</th>
                 <th class="col-nama">Nama</th>
-                @if($section === 'student')
+                <?php if($section === 'student'): ?>
                     <th class="col-kelas">Kelas</th>
-                @endif
+                <?php endif; ?>
                 <th class="col-status">Status</th>
                 <th class="col-img">Foto</th>
                 <th class="col-img">Tanda Tangan</th>
             </tr>
         </thead>
         <tbody>
-        @forelse($rows as $row)
+        <?php $__empty_1 = true; $__currentLoopData = $rows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <tr>
-                <td class="col-no">{{ $row['no'] }}</td>
-                <td class="col-nama">{{ $row['nama'] }}</td>
-                @if($section === 'student')
-                    <td class="col-kelas">{{ $row['kelas'] }}</td>
-                @endif
-                <td class="col-status">{{ $row['status'] }}</td>
+                <td class="col-no"><?php echo e($row['no']); ?></td>
+                <td class="col-nama"><?php echo e($row['nama']); ?></td>
+                <?php if($section === 'student'): ?>
+                    <td class="col-kelas"><?php echo e($row['kelas']); ?></td>
+                <?php endif; ?>
+                <td class="col-status"><?php echo e($row['status']); ?></td>
                 <td class="col-img img-cell">
                     <div class="img-box">
-                        <img src="{{ $row['foto_data_uri'] }}" alt="Foto">
+                        <img src="<?php echo e($row['foto_data_uri']); ?>" alt="Foto">
                     </div>
                 </td>
                 <td class="col-img ttd-cell">
                     <div class="ttd-box">
-                        <img src="{{ $row['ttd_data_uri'] }}" alt="Tanda Tangan">
+                        <img src="<?php echo e($row['ttd_data_uri']); ?>" alt="Tanda Tangan">
                     </div>
                 </td>
             </tr>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <tr>
-                <td colspan="{{ $section === 'student' ? 6 : 5 }}" style="text-align:center; color:#6b7280; padding: 18px;">
+                <td colspan="<?php echo e($section === 'student' ? 6 : 5); ?>" style="text-align:center; color:#6b7280; padding: 18px;">
                     Tidak ada data.
                 </td>
             </tr>
-        @endforelse
+        <?php endif; ?>
         </tbody>
     </table>
 </body>
 </html>
+<?php /**PATH D:\PROJECT\LARAVEL\BUDI\resources\views/admin/export-pdf.blade.php ENDPATH**/ ?>

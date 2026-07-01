@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tanda Tangan - Pameran TKI</title>
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/guest-form.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/welcome.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/guest-form.css')); ?>">
 </head>
 <body class="guest-form-body">
 
-    @include('layouts.ai-bg')
-    @include('layouts.navbar')
+    <?php echo $__env->make('layouts.ai-bg', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('layouts.navbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <div class="main-content-form">
         <div class="step-container">
@@ -52,13 +52,13 @@
         </div>
 
         <form id="signatureForm" method="POST" action="/submit-guest-data" style="display:none">
-            @csrf
+            <?php echo csrf_field(); ?>
             <input type="hidden" id="fotoBase64" name="foto_base64">
             <input type="hidden" id="ttdBase64" name="tanda_tangan_base64">
         </form>
     </div>
 
-    @include('layouts.footer')
+    <?php echo $__env->make('layouts.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -238,3 +238,4 @@
 
 </body>
 </html>
+<?php /**PATH D:\PROJECT\LARAVEL\BUDI\resources\views/tamu/guest-signature.blade.php ENDPATH**/ ?>
