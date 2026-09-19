@@ -13,50 +13,64 @@ class TamuController extends Controller
         return view('tamu.guest-form');
     }
 
-    public function storeForm(Request $request)
+    public function submit(Request $request)
     {
-        $request->validate([
-            'full_name' => 'required|string|max:100',
-            'status'    => 'required|in:guru,siswa,murid',
-            'class'     => 'nullable|string|max:50',
+        $validated = $request->validate([
+            'nama' => 'required|string|max:100',
+            'status' => 'required|in:instansi,sekolah',
+            'instansi' => 'required_if:status,instansi|nullable|string|max:150',
+            'asal_sekolah' => 'required_if:status,sekolah|nullable|string|max:150',
+            'ulasan' => 'required|in:senang,biasa,sedih',
+            'foto_base64' => 'required|string',
+            'tanda_tangan_base64' => 'nullable|string',
+        ], [
+            'nama.required' => 'Nama lengkap wajib diisi.',
+            'status.required' => 'Silakan pilih status (Instansi atau Sekolah).',
+            'instansi.required_if' => 'Nama instansi wajib diisi jika memilih status Instansi.',
+            'asal_sekolah.required_if' => 'Asal sekolah wajib diisi jika memilih status Sekolah.',
+            'ulasan.required' => 'Silakan berikan penilaian ulasan Anda.',
+            'foto_base64.required' => 'Foto pengunjung wajib diambil.',
         ]);
 
-        session([
-            'tamu.nama'   => $request->full_name,
-            'tamu.status' => $request->status === 'murid' ? 'siswa' : $request->status,
-            'tamu.kelas'  => $request->status === 'murid' ? $request->class : null,
+        $fotoPath = $this->storeBase64Image($request->input('foto_base64'), 'foto');
+        if (!$fotoPath) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Gagal memproses foto pengunjung. Silakan ambil ulang.'], 422);
+            }
+            return back()->withInput()->with('error', 'Gagal memproses foto pengunjung. Silakan ambil ulang.');
+        }
+
+        $ttdPath = $this->storeBase64Image($request->input('tanda_tangan_base64'), 'tanda_tangan');
+
+        $tamu = Tamu::create([
+            'nama' => $validated['nama'],
+            'status' => $validated['status'],
+            'instansi' => $validated['status'] === 'instansi' ? $validated['instansi'] : null,
+            'asal_sekolah' => $validated['status'] === 'sekolah' ? $validated['asal_sekolah'] : null,
+            'ulasan' => $validated['ulasan'],
+            'foto' => $fotoPath,
+            'tanda_tangan' => $ttdPath ?? '',
         ]);
 
-        return redirect('/guest-photo');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Terima kasih telah berkunjung! Kehadiran Anda telah tercatat dengan baik.',
+                'redirect' => '/'
+            ]);
+        }
+
+        return redirect('/')->with('success', 'Terima kasih telah berkunjung! Kehadiran Anda telah tercatat dengan baik.');
     }
 
     public function photo()
     {
-        return view('tamu.guest-photo');
+        return redirect('/guest-form');
     }
 
     public function signature()
     {
-        return view('tamu.guest-signature');
-    }
-
-    public function submit(Request $request)
-    {
-        $fotoPath = $this->storeBase64Image($request->input('foto_base64'), 'foto');
-        $ttdPath = $this->storeBase64Image($request->input('tanda_tangan_base64'), 'tanda_tangan');
-
-        // Buat record di database
-        Tamu::create([
-            'nama'         => session('tamu.nama'),
-            'status'       => session('tamu.status'),
-            'kelas'        => session('tamu.kelas'),
-            'foto'         => $fotoPath ?? '',
-            'tanda_tangan' => $ttdPath ?? '',
-        ]);
-
-        session()->forget(['tamu.nama', 'tamu.status', 'tamu.kelas']);
-
-        return redirect('/')->with('success', 'Data tamu berhasil disimpan!');
+        return redirect('/guest-form');
     }
 
     private function storeBase64Image(?string $dataUri, string $directory): ?string

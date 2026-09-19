@@ -1,57 +1,56 @@
-<nav class="navbar-form">
-    <div class="nav-left">
-        <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo Nesasa" class="nav-logo">
-        <span class="nav-title">PAMERAN TKI</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-        <button id="themeToggleBtn" type="button" class="btn-theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle tema">
-            <!-- Sun icon (shown in dark mode) -->
-            <svg id="iconSun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+<header class="mrc-navbar">
+    <a href="/" class="mrc-nav-brand">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang" class="mrc-brand-logo">
+            <img src="{{ asset('img/logomrc.png') }}" alt="Logo MRC" class="mrc-brand-logo" style="height: 38px; width: auto; object-fit: contain;">
+        </div>
+        <div class="mrc-brand-text">
+            <div class="mrc-brand-title">
+                <span>BUTAGI</span>
+            </div>
+            <span class="mrc-brand-sub">Buku Tamu Digital SMKN 1 Subang</span>
+        </div>
+    </a>
+
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button type="button" class="theme-btn" id="mrcThemeToggle" onclick="toggleMrcTheme()" aria-label="Ganti tema" style="padding: 0.45rem 0.8rem; font-size: 0.8125rem;">
+            <svg id="mrcIconMoon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
             </svg>
-            <!-- Moon icon (shown in light mode) -->
-            <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            <svg id="mrcIconSun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
             </svg>
+            <span id="mrcThemeLabel">Light</span>
         </button>
-        <a href="/login" class="btn-login">Login Admin</a>
+        <a href="/" class="btn-mrc btn-mrc-outline" style="padding: 0.5rem 0.875rem; font-size: 0.8125rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Beranda</span>
+        </a>
     </div>
-</nav>
-
+</header>
 <script>
+    function updateMrcThemeUI(theme) {
+        const isDark = theme === 'dark';
+        const moon = document.getElementById('mrcIconMoon');
+        const sun = document.getElementById('mrcIconSun');
+        const lbl = document.getElementById('mrcThemeLabel');
+        if (moon) moon.style.display = isDark ? 'block' : 'none';
+        if (sun) sun.style.display = isDark ? 'none' : 'block';
+        if (lbl) lbl.textContent = isDark ? 'Light' : 'Dark';
+    }
+    function toggleMrcTheme() {
+        const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('butagi_theme', next);
+        updateMrcThemeUI(next);
+    }
     (function() {
-        const saved = localStorage.getItem('themeMode');
-        if (saved === 'light') document.documentElement.classList.add('light-mode');
+        const saved = localStorage.getItem('butagi_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+        updateMrcThemeUI(saved);
     })();
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const btn = document.getElementById('themeToggleBtn');
-        const iconSun = document.getElementById('iconSun');
-        const iconMoon = document.getElementById('iconMoon');
-
-        function updateIcon() {
-            const isLight = document.documentElement.classList.contains('light-mode');
-            iconSun.style.display  = isLight ? 'none'  : 'block';
-            iconMoon.style.display = isLight ? 'block' : 'none';
-        }
-
-        updateIcon();
-
-        btn.addEventListener('click', function() {
-            document.documentElement.classList.toggle('light-mode');
-            const isLight = document.documentElement.classList.contains('light-mode');
-            localStorage.setItem('themeMode', isLight ? 'light' : 'dark');
-            updateIcon();
-        });
-    });
 </script>

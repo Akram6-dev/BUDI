@@ -11,8 +11,11 @@ class Tamu extends Model
     protected $fillable = [
         'nama',
         'status',
-        'kelas',
+        'instansi',
+        'asal_sekolah',
+        'ulasan',
         'foto',
         'tanda_tangan',
     ];
+
 }

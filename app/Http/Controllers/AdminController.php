@@ -54,12 +54,15 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
-    public function getTeachers(Request $request)
+    public function getInstansi(Request $request)
     {
-        $query = Tamu::where('status', 'guru');
+        $query = Tamu::where('status', 'instansi');
 
         if ($request->filled('search')) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->search . '%')
+                  ->orWhere('instansi', 'like', '%' . $request->search . '%');
+            });
         }
 
         if ($request->filled('letter')) {
@@ -71,80 +74,103 @@ class AdminController extends Controller
             if (in_array($sortVal, ['asc', 'desc'])) {
                 $query->orderBy('nama', $sortVal);
             }
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
-        $teachers = $query->get();
-        $count = $teachers->count();
+        $instansiList = $query->get();
+        $count = $instansiList->count();
 
         return response()->json([
             'count' => $count,
-            'data' => $teachers->map(function ($item, $index) {
+            'data' => $instansiList->map(function ($item, $index) {
                 return [
                     'id' => $index + 1,
                     'db_id' => $item->id,
                     'nama' => $item->nama,
                     'status' => $item->status,
-                    'kelas' => $item->kelas,
+                    'instansi' => $item->instansi ?? '-',
+                    'ulasan' => $item->ulasan ?? 'senang',
                     'foto' => $item->foto,
                     'tanda_tangan' => $item->tanda_tangan,
                 ];
             })->values()
         ]);
+    }
+
+    public function getSekolah(Request $request)
+    {
+        $query = Tamu::where('status', 'sekolah');
+
+        if ($request->filled('search_nama') || $request->filled('search')) {
+            $term = $request->search_nama ?: $request->search;
+            $query->where('nama', 'like', '%' . $term . '%');
+        }
+
+        if ($request->filled('search_sekolah') || $request->filled('search_kelas')) {
+            $school = $request->search_sekolah ?: $request->search_kelas;
+            $query->where('asal_sekolah', 'like', '%' . $school . '%');
+        }
+
+        if ($request->filled('letter')) {
+            $query->where('nama', 'like', $request->letter . '%');
+        }
+
+        if ($request->filled('sort')) {
+            $sortVal = $request->sort;
+            if (in_array($sortVal, ['asc', 'desc'])) {
+                $query->orderBy('nama', $sortVal);
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $schools = $query->get();
+        $count = $schools->count();
+
+        return response()->json([
+            'count' => $count,
+            'data' => $schools->map(function ($item, $index) {
+                return [
+                    'id' => $index + 1,
+                    'db_id' => $item->id,
+                    'nama' => $item->nama,
+                    'asal_sekolah' => $item->asal_sekolah ?? '-',
+                    'status' => $item->status,
+                    'ulasan' => $item->ulasan ?? 'senang',
+                    'foto' => $item->foto,
+                    'tanda_tangan' => $item->tanda_tangan,
+                ];
+            })->values()
+        ]);
+    }
+
+    public function getSchoolsList()
+    {
+        $schools = Tamu::where('status', 'sekolah')
+            ->whereNotNull('asal_sekolah')
+            ->where('asal_sekolah', '!=', '')
+            ->distinct()
+            ->pluck('asal_sekolah')
+            ->sort()
+            ->values();
+
+        return response()->json($schools);
+    }
+
+    public function getTeachers(Request $request)
+    {
+        return $this->getInstansi($request);
     }
 
     public function getStudents(Request $request)
     {
-        $query = Tamu::where('status', 'siswa');
-
-        if ($request->filled('search_nama')) {
-            $query->where('nama', 'like', '%' . $request->search_nama . '%');
-        }
-
-        if ($request->filled('search_kelas')) {
-            $query->where('kelas', 'like', '%' . $request->search_kelas . '%');
-        }
-
-        if ($request->filled('letter')) {
-            $query->where('nama', 'like', $request->letter . '%');
-        }
-
-        if ($request->filled('sort')) {
-            $sortVal = $request->sort;
-            if (in_array($sortVal, ['asc', 'desc'])) {
-                $query->orderBy('nama', $sortVal);
-            }
-        }
-
-        $students = $query->get();
-        $count = $students->count();
-
-        return response()->json([
-            'count' => $count,
-            'data' => $students->map(function ($item, $index) {
-                return [
-                    'id' => $index + 1,
-                    'db_id' => $item->id,
-                    'nama' => $item->nama,
-                    'kelas' => $item->kelas,
-                    'status' => $item->status,
-                    'foto' => $item->foto,
-                    'tanda_tangan' => $item->tanda_tangan,
-                ];
-            })->values()
-        ]);
+        return $this->getSekolah($request);
     }
 
     public function getClasses()
     {
-        $classes = Tamu::where('status', 'siswa')
-            ->whereNotNull('kelas')
-            ->where('kelas', '!=', '')
-            ->distinct()
-            ->pluck('kelas')
-            ->sort()
-            ->values();
-
-        return response()->json($classes);
+        return $this->getSchoolsList();
     }
 
     public function getData($id)
@@ -159,14 +185,22 @@ class AdminController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:100',
-            'status' => 'required|in:guru,siswa',
-            'kelas' => 'nullable|string|max:50',
+            'status' => 'required|in:instansi,sekolah,guru,siswa',
+            'instansi' => 'nullable|string|max:150',
+            'asal_sekolah' => 'nullable|string|max:150',
+            'ulasan' => 'nullable|in:senang,biasa,sedih',
         ]);
+
+        $status = in_array($request->status, ['instansi', 'sekolah'])
+            ? $request->status
+            : ($request->status === 'guru' ? 'instansi' : 'sekolah');
 
         $tamu->update([
             'nama' => $request->nama,
-            'status' => $request->status,
-            'kelas' => $request->status === 'guru' ? null : $request->kelas,
+            'status' => $status,
+            'instansi' => $status === 'instansi' ? ($request->instansi ?? $request->kelas) : null,
+            'asal_sekolah' => $status === 'sekolah' ? ($request->asal_sekolah ?? $request->kelas) : null,
+            'ulasan' => $request->ulasan ?? $tamu->ulasan ?? 'senang',
         ]);
 
         return response()->json(['success' => true, 'message' => 'Data berhasil diperbarui']);
@@ -188,21 +222,24 @@ class AdminController extends Controller
 
         @set_time_limit(120);
 
-        $section = $request->get('section', 'teacher');
-        $isStudent = $section === 'student';
+        $section = $request->get('section', 'instansi');
+        $isSchool = in_array($section, ['sekolah', 'student', 'school']);
 
-        $query = Tamu::query()->where('status', $isStudent ? 'siswa' : 'guru');
+        $query = Tamu::query()->where('status', $isSchool ? 'sekolah' : 'instansi');
 
-        if ($isStudent) {
-            if ($request->filled('search_nama')) {
-                $query->where('nama', 'like', '%' . $request->search_nama . '%');
+        if ($isSchool) {
+            if ($request->filled('search_nama') || $request->filled('search')) {
+                $query->where('nama', 'like', '%' . ($request->search_nama ?: $request->search) . '%');
             }
-            if ($request->filled('search_kelas')) {
-                $query->where('kelas', 'like', '%' . $request->search_kelas . '%');
+            if ($request->filled('search_sekolah') || $request->filled('search_kelas')) {
+                $query->where('asal_sekolah', 'like', '%' . ($request->search_sekolah ?: $request->search_kelas) . '%');
             }
         } else {
             if ($request->filled('search')) {
-                $query->where('nama', 'like', '%' . $request->search . '%');
+                $query->where(function ($q) use ($request) {
+                    $q->where('nama', 'like', '%' . $request->search . '%')
+                      ->orWhere('instansi', 'like', '%' . $request->search . '%');
+                });
             }
         }
 
@@ -221,7 +258,7 @@ class AdminController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $items = $query->get(['id', 'nama', 'kelas', 'status', 'foto', 'tanda_tangan']);
+        $items = $query->get(['id', 'nama', 'instansi', 'asal_sekolah', 'status', 'ulasan', 'foto', 'tanda_tangan']);
 
         $rows = $items->values()->map(function ($item, $index) {
             $signaturePath = ($item->tanda_tangan ?? '') !== '' ? $item->tanda_tangan : null;
@@ -229,34 +266,30 @@ class AdminController extends Controller
             return [
                 'no' => $index + 1,
                 'nama' => $item->nama,
-                'kelas' => $item->kelas,
+                'instansi' => $item->instansi ?? '-',
+                'asal_sekolah' => $item->asal_sekolah ?? '-',
+                'ulasan' => $item->ulasan ?? 'senang',
                 'status' => $item->status,
                 'foto_data_uri' => $this->imageToDataUri(($item->foto ?? '') !== '' ? $item->foto : null, 220, 165, 68),
                 'ttd_data_uri' => $signaturePath ? $this->imageToDataUri($signaturePath, 220, 100, 78) : self::BLANK_PNG_DATA_URI,
             ];
         });
 
-        $classFilter = $isStudent ? trim((string) $request->get('search_kelas', '')) : '';
-        $sectionLabel = $isStudent
-            ? 'SISWA' . ($classFilter !== '' ? ' ' . strtoupper($classFilter) : '')
-            : 'GURU';
+        $schoolFilter = $isSchool ? trim((string) ($request->get('search_sekolah', $request->get('search_kelas', '')))) : '';
+        $sectionLabel = $isSchool
+            ? 'SEKOLAH' . ($schoolFilter !== '' ? ' ' . strtoupper($schoolFilter) : '')
+            : 'INSTANSI';
 
         $pdf = Pdf::loadView('admin.export-pdf', [
-            'title' => 'DAFTAR KEHADIRAN',
+            'title' => 'DAFTAR KEHADIRAN PENGUNJUNG',
             'section' => $section,
+            'isSchool' => $isSchool,
             'sectionLabel' => $sectionLabel,
             'rows' => $rows,
             'generatedAt' => now(),
         ])->setPaper('a4', 'landscape');
 
-        if ($isStudent) {
-            $classSlug = $classFilter !== ''
-                ? '-' . str($classFilter)->lower()->replaceMatches('/[^a-z0-9]+/', '-')->trim('-')
-                : '';
-            $filename = 'daftar-kehadiran-siswa' . $classSlug . '.pdf';
-        } else {
-            $filename = 'daftar-kehadiran-guru.pdf';
-        }
+        $filename = $isSchool ? 'daftar-kehadiran-sekolah.pdf' : 'daftar-kehadiran-instansi.pdf';
 
         return $pdf->download($filename);
     }
