@@ -188,7 +188,7 @@ class AdminController extends Controller
             'status' => 'required|in:instansi,sekolah,guru,siswa',
             'instansi' => 'nullable|string|max:150',
             'asal_sekolah' => 'nullable|string|max:150',
-            'ulasan' => 'nullable|in:senang,biasa,sedih',
+            'ulasan' => 'nullable|in:senang,menarik,unik,biasa,sedih',
         ]);
 
         $status = in_array($request->status, ['instansi', 'sekolah'])

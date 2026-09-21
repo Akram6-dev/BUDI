@@ -328,10 +328,17 @@
             border: 1px solid rgba(52, 211, 153, 0.4);
             font-weight: 700;
         }
+        .badge-ulasan-menarik,
         .badge-ulasan-biasa {
             background: rgba(99, 102, 241, 0.2);
             color: #a5b4fc;
             border: 1px solid rgba(129, 140, 248, 0.4);
+            font-weight: 700;
+        }
+        .badge-ulasan-unik {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.4);
             font-weight: 700;
         }
         .badge-ulasan-sedih {
@@ -716,10 +723,18 @@
             font-weight: 700 !important;
         }
 
+        [data-theme="light"] .badge-ulasan-menarik,
         [data-theme="light"] .badge-ulasan-biasa {
             background: #eff6ff !important;
             color: #1e40af !important;
             border: 1px solid #bfdbfe !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .badge-ulasan-unik {
+            background: #fffbeb !important;
+            color: #92400e !important;
+            border: 1px solid #fde68a !important;
             font-weight: 700 !important;
         }
 
@@ -1101,8 +1116,8 @@
                         <label class="mrc-label" for="editUlasan">Ulasan Pengunjung</label>
                         <select id="editUlasan" class="select-filter" style="width: 100%;">
                             <option value="senang">😊 Senang</option>
-                            <option value="biasa">😐 Biasa</option>
-                            <option value="sedih">😞 Sedih</option>
+                            <option value="menarik">🤩 Menarik</option>
+                            <option value="unik">🤔 Unik</option>
                         </select>
                     </div>
                 </div>
@@ -1159,10 +1174,12 @@
         function getUlasanBadge(val) {
             if (val === 'senang') {
                 return '<span class="badge-pill badge-ulasan-senang">😊 Senang</span>';
-            } else if (val === 'biasa') {
-                return '<span class="badge-pill badge-ulasan-biasa">😐 Biasa</span>';
+            } else if (val === 'menarik' || val === 'biasa') {
+                return '<span class="badge-pill badge-ulasan-menarik">🤩 Menarik</span>';
+            } else if (val === 'unik' || val === 'sedih') {
+                return '<span class="badge-pill badge-ulasan-unik">🤔 Unik</span>';
             } else {
-                return '<span class="badge-pill badge-ulasan-sedih">😞 Sedih</span>';
+                return '-';
             }
         }
 
@@ -1392,7 +1409,10 @@
                     document.getElementById('editStatus').value = data.status === 'guru' ? 'instansi' : (data.status === 'siswa' ? 'sekolah' : data.status);
                     document.getElementById('editInstansi').value = data.instansi || '';
                     document.getElementById('editAsalSekolah').value = data.asal_sekolah || '';
-                    document.getElementById('editUlasan').value = data.ulasan || 'senang';
+                    let ulasanVal = data.ulasan || 'senang';
+                    if (ulasanVal === 'biasa') ulasanVal = 'menarik';
+                    if (ulasanVal === 'sedih') ulasanVal = 'unik';
+                    document.getElementById('editUlasan').value = ulasanVal;
                     toggleEditFields();
                     document.getElementById('editModal').classList.add('show');
                 });

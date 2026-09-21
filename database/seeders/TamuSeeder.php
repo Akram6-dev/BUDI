@@ -44,7 +44,7 @@ class TamuSeeder extends Seeder
             'status' => 'sekolah',
             'instansi' => null,
             'asal_sekolah' => 'SMKN 2 Subang',
-            'ulasan' => 'biasa',
+            'ulasan' => 'menarik',
             'foto' => 'foto/sample4.png',
             'tanda_tangan' => ''
         ]);

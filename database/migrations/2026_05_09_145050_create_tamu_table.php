@@ -14,7 +14,7 @@ return new class extends Migration
             $table->enum('status', ['instansi', 'sekolah']);
             $table->string('instansi', 150)->nullable();
             $table->string('asal_sekolah', 150)->nullable();
-            $table->enum('ulasan', ['senang', 'biasa', 'sedih'])->default('senang');
+            $table->enum('ulasan', ['senang', 'menarik', 'unik', 'biasa', 'sedih'])->default('senang');
             $table->string('foto', 255);
             $table->string('tanda_tangan', 255)->nullable();
             $table->timestamp('created_at')->useCurrent();

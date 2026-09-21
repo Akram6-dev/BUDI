@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `tamu` (
   `status` enum('instansi','sekolah') NOT NULL,
   `instansi` varchar(150) DEFAULT NULL,
   `asal_sekolah` varchar(150) DEFAULT NULL,
-  `ulasan` enum('senang','biasa','sedih') NOT NULL DEFAULT 'senang',
+  `ulasan` enum('senang','menarik','unik','biasa','sedih') NOT NULL DEFAULT 'senang',
   `foto` varchar(255) NOT NULL,
   `tanda_tangan` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -75,10 +75,10 @@
                 <td class="col-status">
                     @if(($row['ulasan'] ?? '') === 'senang')
                         SENANG
-                    @elseif(($row['ulasan'] ?? '') === 'biasa')
-                        BIASA
-                    @elseif(($row['ulasan'] ?? '') === 'sedih')
-                        SEDIH
+                    @elseif(($row['ulasan'] ?? '') === 'menarik' || ($row['ulasan'] ?? '') === 'biasa')
+                        MENARIK
+                    @elseif(($row['ulasan'] ?? '') === 'unik' || ($row['ulasan'] ?? '') === 'sedih')
+                        UNIK
                     @else
                         -
                     @endif

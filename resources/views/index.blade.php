@@ -35,8 +35,8 @@
             --radius-lg: 1rem;
             --radius-xl: 1.375rem;
             --radius-pill: 9999px;
-            --nav-h:     clamp(52px, 6.5vh, 76px);
-            --foot-h:    clamp(36px, 4.8vh, 52px);
+            --nav-h:     clamp(44px, 6.2vh, 68px);
+            --foot-h:    clamp(28px, 4.2vh, 44px);
         }
 
         /* ══════════════════════════════════════════════
@@ -127,9 +127,10 @@
 
         /* Theme toggle button */
         .theme-btn {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            font-size: 0.8125rem; font-weight: 600;
-            padding: 0.4rem 0.85rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+            font-size: 0.8rem; font-weight: 600;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
             border-radius: 9999px;
             border: 1px solid var(--border-b);
             background: rgba(15,23,42,0.45);
@@ -137,6 +138,7 @@
             cursor: pointer;
             transition: all 0.22s ease;
             backdrop-filter: blur(10px);
+            box-sizing: border-box;
         }
         .theme-btn:hover { color: var(--text); border-color: rgba(129,140,248,0.5); background: rgba(49,46,129,0.3); }
         [data-theme="light"] .theme-btn {
@@ -156,16 +158,23 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            overflow-wrap: anywhere;
         }
 
         html, body {
-            height: 100%;
+            min-height: 100dvh;
             width: 100%;
-            overflow: hidden !important;
+            max-width: 100vw;
+            overflow-x: hidden;
             font-family: var(--font);
             background-color: var(--bg);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
+        }
+
+        img, video {
+            max-width: 100%;
+            height: auto;
         }
 
         /* ══════════════════════════════════════════════
@@ -180,15 +189,15 @@
         }
 
         /* ══════════════════════════════════════════════
-           ROOT LAYOUT — strict 100vh, no scroll
+           ROOT LAYOUT — min-height: 100dvh
         ══════════════════════════════════════════════ */
         .root-layout {
             position: relative;
             z-index: 1;
-            height: 100vh;
-            height: 100dvh;
-            max-height: 100vh;
-            overflow: hidden !important;
+            min-height: 100dvh;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -231,7 +240,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 clamp(1.25rem, 3.5vw, 4rem);
+            padding: 0 clamp(1rem, 3vw, 3.5rem);
             background: rgba(8, 12, 24, 0.72);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -253,7 +262,7 @@
         }
 
         .nav-logo-img {
-            height: clamp(30px, 4.5vh, 48px);
+            height: clamp(26px, 4vh, 42px);
             width: auto;
             object-fit: contain;
             filter: drop-shadow(0 0 6px rgba(129,140,248,0.35));
@@ -263,7 +272,7 @@
 
         .nav-logo-divider {
             width: 1px;
-            height: clamp(20px, 3vh, 30px);
+            height: clamp(18px, 2.6vh, 26px);
             background: var(--border-b);
         }
 
@@ -273,7 +282,7 @@
             gap: 0.1rem;
         }
         .nav-name {
-            font-size: clamp(1rem, 1.35vw, 1.55rem);
+            font-size: clamp(0.95rem, 1.25vw, 1.45rem);
             font-weight: 900;
             letter-spacing: -0.03em;
             background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
@@ -282,7 +291,7 @@
             line-height: 1;
         }
         .nav-school {
-            font-size: clamp(0.65rem, 0.8vw, 0.9rem);
+            font-size: clamp(0.62rem, 0.75vw, 0.85rem);
             font-weight: 500;
             color: var(--text-muted);
             letter-spacing: 0.01em;
@@ -295,14 +304,15 @@
         .hero {
             position: relative;
             z-index: 1;
-            flex: 1;
+            flex: 1 0 auto;
             min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             gap: 0;
-            overflow: hidden !important;
+            width: 100%;
+            padding: clamp(1rem, 3.5vh, 3.5rem) 0;
         }
 
         .hero-inner {
@@ -366,7 +376,9 @@
         .cta-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: clamp(0.5rem, 0.8vw, 0.9rem);
+            min-height: 48px;
             padding: clamp(0.75rem, 1.6vh, 1.35rem) clamp(1.75rem, 3vw, 3.75rem);
             font-size: clamp(0.95rem, min(1.2vw, 2vh), 1.35rem);
             font-weight: 700;
@@ -376,6 +388,7 @@
             border-radius: var(--radius-pill);
             background: var(--accent-g);
             border: 1px solid rgba(165,180,252,0.25);
+            box-sizing: border-box;
             box-shadow:
                 0 0 0 1px rgba(79,70,229,0.35) inset,
                 0 12px 32px -4px rgba(79,70,229,0.55),
@@ -418,20 +431,28 @@
         .footer {
             position: relative;
             z-index: 50;
-            height: var(--foot-h);
+            min-height: var(--foot-h);
+            height: auto;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0.45rem clamp(0.75rem, 3vw, 3.5rem);
             border-top: 1px solid var(--border);
             background: rgba(8, 12, 24, 0.65);
             backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
         }
         .footer span {
-            font-size: clamp(0.72rem, 0.85vw, 0.95rem);
+            font-size: clamp(0.68rem, 0.85vw, 0.92rem);
             font-weight: 500;
             color: var(--text-muted);
             letter-spacing: 0.02em;
+            text-align: center;
+            line-height: 1.4;
+            overflow-wrap: anywhere;
         }
 
         /* ══════════════════════════════════════════════
@@ -475,12 +496,139 @@
         }
 
         /* ══════════════════════════════════════════════
-           RESPONSIVE
+           RESPONSIVE BREAKPOINTS (Mobile-First Architecture)
         ══════════════════════════════════════════════ */
-        @media (max-width: 640px) {
-            .navbar { padding: 0 1rem; }
-            .nav-logo-img { height: 28px; }
-            .hero-inner { gap: 1.5rem; }
+        @media (max-width: 480px) {
+            .navbar { padding: 0 clamp(0.5rem, 2vw, 0.75rem); gap: 0.35rem; }
+            .nav-brand { min-width: 0; }
+            .nav-logos { gap: 0.25rem; }
+            .nav-logo-img { height: 25px; }
+            .nav-logo-divider { height: 15px; }
+            .nav-name { font-size: 1rem; }
+            .nav-school { font-size: 0.62rem; }
+            .nav-text { display: none !important; }
+            .theme-btn { padding: 0 0.5rem; min-height: 44px; min-width: 44px; justify-content: center; }
+            .hero-inner { gap: 1.25rem; padding: 0 1rem; }
+            .hero-title { font-size: clamp(1.85rem, 8vw, 2.8rem); }
+            .cta-btn { width: 100%; max-width: 320px; font-size: 1rem; padding: 0.85rem 1.5rem; }
+            .footer { padding: 0.5rem 0.75rem; }
+            .footer span { font-size: 0.65rem; line-height: 1.4; }
+        }
+
+        @media (max-width: 360px) {
+            .navbar { padding: 0 0.5rem; }
+            .nav-school { display: none; }
+            .hero-title { font-size: 1.85rem; }
+        }
+
+        @media (min-width: 640px) {
+            .navbar { padding: 0 1.5rem; }
+            .hero-inner { gap: 2rem; }
+            .hero-title { font-size: clamp(2.4rem, 6.5vw, 3.2rem); }
+            .cta-btn { font-size: 1.05rem; padding: 0.95rem 2.5rem; }
+        }
+
+        /* ─── Standard Tablets (iPad Mini / 768px - 899px) ─── */
+        @media (min-width: 768px) and (max-width: 899px) {
+            .navbar { padding: 0 2rem; }
+            .nav-logos { gap: 0.5rem; }
+            .nav-logo-img { height: 34px; }
+            .nav-name { font-size: 1.25rem; }
+            .nav-school { font-size: 0.78rem; }
+            .nav-text { display: inline !important; }
+            .theme-btn { padding: 0.45rem 1.1rem; min-height: 44px; font-size: 0.88rem; }
+            .hero-inner { gap: clamp(2.5rem, 5vh, 4rem); max-width: 820px; }
+            .hero-title {
+                font-size: clamp(3.2rem, 7.5vw, 4.8rem);
+                line-height: 1.15;
+            }
+            .cta-btn {
+                font-size: 1.25rem;
+                padding: 1.15rem 3.5rem;
+                min-height: 60px;
+                max-width: 440px;
+                box-shadow:
+                    0 0 0 1px rgba(79,70,229,0.35) inset,
+                    0 16px 40px -6px rgba(79,70,229,0.55),
+                    0 0 32px rgba(139,92,246,0.35);
+            }
+            .footer span { font-size: 0.78rem; }
+        }
+
+        /* ─── Large & Pro Tablets (iPad Pro 1032x1376, Surface Pro 960x1440: 900px - 1180px or tall portrait tablets) ─── */
+        @media (min-width: 900px) and (max-width: 1180px), (min-width: 900px) and (min-height: 1000px) and (max-width: 1300px) {
+            .navbar { padding: 0 clamp(2rem, 3.5vw, 3.5rem); }
+            .nav-logos { gap: 0.65rem; }
+            .nav-logo-img { height: 42px; }
+            .nav-logo-divider { height: 26px; }
+            .nav-name { font-size: 1.4rem; }
+            .nav-school { font-size: 0.88rem; }
+            .nav-text { display: inline !important; }
+            .theme-btn { padding: 0.55rem 1.35rem; min-height: 48px; font-size: 0.95rem; }
+            .hero-inner {
+                gap: clamp(3.5rem, 6.5vh, 5.5rem);
+                max-width: 960px;
+            }
+            .hero-title {
+                font-size: clamp(4.2rem, 8.5vw, 6.2rem);
+                line-height: 1.12;
+            }
+            .cta-btn {
+                font-size: 1.45rem;
+                padding: 1.35rem 4.5rem;
+                min-height: 72px;
+                max-width: 520px;
+                border-radius: var(--radius-pill);
+                box-shadow:
+                    0 0 0 1px rgba(79,70,229,0.35) inset,
+                    0 20px 48px -6px rgba(79,70,229,0.6),
+                    0 0 40px rgba(139,92,246,0.4);
+            }
+            .cta-icon {
+                width: 28px;
+                height: 28px;
+            }
+            .footer span { font-size: 0.88rem; }
+        }
+
+        /* ─── Compact Laptop Screens (Height <= 670px, e.g. 100% zoom on 14" laptop) ─── */
+        @media (min-width: 1181px) and (max-height: 670px) {
+            .navbar { padding: 0 2rem; }
+            .hero-inner { gap: clamp(1.5rem, 3.5vh, 2.5rem); max-width: 800px; }
+            .hero-title { font-size: clamp(2.8rem, 5.5vw, 4rem); }
+            .cta-btn { font-size: 1.15rem; padding: 0.95rem 3rem; min-height: 52px; max-width: 400px; }
+        }
+
+        /* ─── Normal Laptops & Comfortable Landscape (Height 671px - 950px, e.g. 75%-80% zoom or 1080p) ─── */
+        @media (min-width: 1181px) and (min-height: 671px) and (max-height: 950px) {
+            .navbar { padding: 0 clamp(2rem, 3.5vw, 3.5rem); }
+            .hero-inner { gap: clamp(2.5rem, 5.5vh, 4.2rem); max-width: 880px; }
+            .hero-title { font-size: clamp(3.8rem, 6.8vw, 5.2rem); }
+            .cta-btn { font-size: 1.35rem; padding: 1.25rem 4rem; min-height: 66px; max-width: 460px; }
+        }
+
+        @media (min-width: 1024px) and (min-height: 600px) and (max-height: 950px) {
+            .root-layout {
+                height: 100dvh;
+                max-height: 100vh;
+                overflow: hidden !important;
+            }
+            .hero {
+                overflow: hidden !important;
+            }
+        }
+
+        @media (min-width: 1280px) and (min-height: 951px) {
+            .hero-inner { gap: clamp(2.5rem, 4.5vh, 4rem); }
+            .hero-title { font-size: 5.2rem; }
+            .cta-btn { font-size: 1.35rem; padding: 1.25rem 4rem; min-height: 66px; }
+        }
+
+        @media (min-width: 1920px) {
+            .nav-name { font-size: 1.45rem; }
+            .nav-school { font-size: 0.85rem; }
+            .hero-title { font-size: 5.6rem; }
+            .cta-btn { font-size: 1.4rem; padding: 1.35rem 4.5rem; min-height: 70px; }
         }
     </style>
 </head>
@@ -513,7 +661,7 @@
                 <div class="nav-logos">
                     <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang" class="nav-logo-img">
                     <div class="nav-logo-divider" aria-hidden="true"></div>
-                    <img src="{{ asset('img/logomrc.png') }}" alt="Logo MRC" class="nav-logo-img" style="height:34px;">
+                    <img src="{{ asset('img/logomrc.png') }}" alt="Logo MRC" class="nav-logo-img">
                 </div>
                 <div class="nav-wordmark">
                     <span class="nav-name">BUTAGI</span>
@@ -524,7 +672,7 @@
             <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode">
                 <svg id="iconMoon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 <svg id="iconSun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <span id="themeLabel">Dark</span>
+                <span id="themeLabel" class="nav-text">Dark</span>
             </button>
         </header>
 
@@ -550,7 +698,7 @@
 
         <!-- ─── Footer ─── -->
         <footer class="footer" role="contentinfo">
-            <span>© SMKN 1 SUBANG 2026</span>
+            <span>© {{ date('Y') }} SMKN 1 Subang</span>
         </footer>
 
     </div>

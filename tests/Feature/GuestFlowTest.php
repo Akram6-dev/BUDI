@@ -19,6 +19,8 @@ class GuestFlowTest extends TestCase
         $response->assertSee('Instansi');
         $response->assertSee('Sekolah');
         $response->assertSee('Senang');
+        $response->assertSee('Menarik');
+        $response->assertSee('Unik');
     }
 
     public function test_legacy_photo_and_signature_routes_redirect_to_guest_form(): void
@@ -75,7 +77,7 @@ class GuestFlowTest extends TestCase
             'nama' => 'Annisa Putri',
             'status' => 'sekolah',
             'asal_sekolah' => 'SMKN 1 Subang',
-            'ulasan' => 'biasa',
+            'ulasan' => 'menarik',
             'foto_base64' => $sampleBase64,
             'tanda_tangan_base64' => null,
         ]);
@@ -86,7 +88,32 @@ class GuestFlowTest extends TestCase
             'nama' => 'Annisa Putri',
             'status' => 'sekolah',
             'asal_sekolah' => 'SMKN 1 Subang',
-            'ulasan' => 'biasa',
+            'ulasan' => 'menarik',
+        ]);
+    }
+
+    public function test_successful_guest_submission_with_unik_ulasan(): void
+    {
+        Storage::fake('public');
+
+        $sampleBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        $response = $this->post('/guest-form', [
+            'nama' => 'Fajar Pratama',
+            'status' => 'sekolah',
+            'asal_sekolah' => 'SMKN 1 Subang',
+            'ulasan' => 'unik',
+            'foto_base64' => $sampleBase64,
+            'tanda_tangan_base64' => null,
+        ]);
+
+        $response->assertRedirect('/');
+
+        $this->assertDatabaseHas('tamu', [
+            'nama' => 'Fajar Pratama',
+            'status' => 'sekolah',
+            'asal_sekolah' => 'SMKN 1 Subang',
+            'ulasan' => 'unik',
         ]);
     }
 }

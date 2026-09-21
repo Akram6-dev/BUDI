@@ -20,7 +20,7 @@ class TamuController extends Controller
             'status' => 'required|in:instansi,sekolah',
             'instansi' => 'required_if:status,instansi|nullable|string|max:150',
             'asal_sekolah' => 'required_if:status,sekolah|nullable|string|max:150',
-            'ulasan' => 'required|in:senang,biasa,sedih',
+            'ulasan' => 'required|in:senang,menarik,unik,biasa,sedih',
             'foto_base64' => 'required|string',
             'tanda_tangan_base64' => 'nullable|string',
         ], [
