@@ -1,3 +1,3 @@
-<footer class="footer-form">
-    © 2024 PAMERAN TKI - SMKN 1 SUBANG
+<footer class="footer" role="contentinfo">
+    <span>© {{ date('Y') }} SMKN 1 Subang</span>
 </footer>

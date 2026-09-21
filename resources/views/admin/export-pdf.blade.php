@@ -40,7 +40,7 @@
 <body>
     <div class="title">{{ $title }}</div>
     <div class="section-label">
-        {{ $sectionLabel ?? ($section === 'student' ? 'SISWA' : 'GURU') }}
+        {{ $sectionLabel ?? ($isSchool ? 'SEKOLAH' : 'INSTANSI') }}
     </div>
     <div class="meta">
         Dicetak: {{ $generatedAt->format('d/m/Y H:i') }}
@@ -49,11 +49,14 @@
     <table>
         <thead>
             <tr>
-                <th class="col-no">ID</th>
-                <th class="col-nama">Nama</th>
-                @if($section === 'student')
-                    <th class="col-kelas">Kelas</th>
+                <th class="col-no">No</th>
+                <th class="col-nama">Nama Tamu</th>
+                @if($isSchool ?? ($section === 'sekolah'))
+                    <th class="col-kelas">Asal Sekolah</th>
+                @else
+                    <th class="col-kelas">Instansi</th>
                 @endif
+                <th class="col-status">Ulasan</th>
                 <th class="col-status">Status</th>
                 <th class="col-img">Foto</th>
                 <th class="col-img">Tanda Tangan</th>
@@ -63,11 +66,24 @@
         @forelse($rows as $row)
             <tr>
                 <td class="col-no">{{ $row['no'] }}</td>
-                <td class="col-nama">{{ $row['nama'] }}</td>
-                @if($section === 'student')
-                    <td class="col-kelas">{{ $row['kelas'] }}</td>
+                <td class="col-nama" style="text-align: left; padding-left: 8px;">{{ $row['nama'] }}</td>
+                @if($isSchool ?? ($section === 'sekolah'))
+                    <td class="col-kelas">{{ $row['asal_sekolah'] ?? '-' }}</td>
+                @else
+                    <td class="col-kelas">{{ $row['instansi'] ?? '-' }}</td>
                 @endif
-                <td class="col-status">{{ $row['status'] }}</td>
+                <td class="col-status">
+                    @if(($row['ulasan'] ?? '') === 'senang')
+                        SENANG
+                    @elseif(($row['ulasan'] ?? '') === 'menarik' || ($row['ulasan'] ?? '') === 'biasa')
+                        MENARIK
+                    @elseif(($row['ulasan'] ?? '') === 'unik' || ($row['ulasan'] ?? '') === 'sedih')
+                        UNIK
+                    @else
+                        -
+                    @endif
+                </td>
+                <td class="col-status">{{ strtoupper($row['status']) }}</td>
                 <td class="col-img img-cell">
                     <div class="img-box">
                         <img src="{{ $row['foto_data_uri'] }}" alt="Foto">
@@ -81,7 +97,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="{{ $section === 'student' ? 6 : 5 }}" style="text-align:center; color:#6b7280; padding: 18px;">
+                <td colspan="7" style="text-align:center; color:#6b7280; padding: 18px;">
                     Tidak ada data.
                 </td>
             </tr>

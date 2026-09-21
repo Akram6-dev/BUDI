@@ -1,10 +1,16 @@
 *.log
 .DS_Store
+
+# Environment & Secret configs
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
+auth.json
+
+# Dependencies & IDEs
+/node_modules
+/vendor
 .phpactor.json
-.phpunit.result.cache
 /.codex
 /.cursor/
 /.idea
@@ -12,15 +18,54 @@
 /.phpunit.cache
 /.vscode
 /.zed
-/auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
 _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.phpunit.result.cache
+
+# Builds & Assets
+/public/build
+/public/hot
+/public/storage
+
+# Storage, Sessions & Caches
+/storage/*.key
+/storage/pail
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+
+# Backups & Local Archives (Data sensitif & foto tamu lama)
+/backups/
+/backup/
+*.backup
+
+# SQLite & Database dumps
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.db
+
+# Temporary test & debug scripts
+test.php
+public/test.php
+test_*.php
+public/test_*.php
+info.php
+public/info.php
+phpinfo.php
+public/phpinfo.php
+

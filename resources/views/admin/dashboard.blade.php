@@ -4,1201 +4,1394 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Dashboard - Pameran TKI</title>
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/guest-form.css') }}">
+    <title>Dashboard Admin — BUTAGI SMKN 1 Subang</title>
+    <script>
+        (function() {
+            const saved = localStorage.getItem('butagi_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ asset('css/mrc-theme.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f4f6;
-            /* Override global styles from public/css/welcome.css */
-            display: block !important;
-            flex-direction: initial !important;
-            overflow-x: hidden;
-        }
-
-        .admin-container {
-            display: flex;
+        .dashboard-layout {
             min-height: 100vh;
-            align-items: stretch;
+            background-color: transparent;
         }
 
-        .admin-navbar {
-            background: #ffffff;
-            color: #111827;
-            padding: 1rem 2rem;
+        .dashboard-container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* Page Header */
+        .page-header {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
-            /* Override global nav { position: fixed; left:0; right:0 } */
-            position: relative !important;
-            top: auto !important;
-            left: auto !important;
-            right: auto !important;
-            width: auto !important;
-            z-index: 1;
-        }
-
-        .navbar-left {
-            display: flex;
-            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
             gap: 1rem;
         }
 
-        .sidebar-toggle {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
-            cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.25rem;
         }
 
-        .sidebar-toggle:hover {
-            background: #f9fafb;
-            border-color: #d1d5db;
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: #94a3b8;
         }
 
-        .sidebar-toggle svg {
-            width: 18px;
-            height: 18px;
+        /* Top 4 Stat Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
 
-        .admin-container.sidebar-collapsed .sidebar-toggle {
-            display: inline-flex;
+        .stat-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
+            padding: 1.35rem 1.5rem;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
         }
 
-        .navbar-left img {
-            height: 50px;
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #818cf8, #4f46e5);
         }
 
-        .navbar-left span {
-            font-size: 1.3rem;
-            font-weight: bold;
+        .stat-card:hover {
+            box-shadow: var(--shadow-medium);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
         }
 
-        .navbar-right {
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
-            gap: 2rem;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .admin-username {
-            font-size: 0.95rem;
-            color: #374151;
+        /* Tab Switcher */
+        .tabs-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-main);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.25rem;
         }
 
-        .btn-logout {
-            background-color: #ef4444;
-            color: white;
-            border: 1px solid #ef4444;
-            padding: 0.6rem 1.5rem;
-            border-radius: 5px;
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #94a3b8;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-lg);
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: all 0.2s ease;
+            position: relative;
         }
 
-        .btn-logout:hover {
-            background-color: #dc2626;
-            border-color: #dc2626;
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(49, 46, 129, 0.35);
         }
 
-        .admin-sidebar {
-            width: 260px;
-            background: #f3f4f6;
-            color: #111827;
-            padding: 1.25rem 0;
-            border-right: 1px solid #e5e7eb;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow: auto;
-            transition: width 0.2s ease;
+        .tab-btn.active {
+            color: #ffffff;
+            background: var(--accent-gradient);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
         }
 
-        .admin-container.sidebar-collapsed .admin-sidebar {
-            width: 0;
-            padding: 0;
-            border-right: 0;
-            overflow: hidden;
+        .tab-counter {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: var(--radius-full);
+            background: rgba(30, 41, 59, 0.8);
+            color: #c7d2fe;
+            border: 1px solid rgba(129, 140, 248, 0.25);
+        }
+
+        .tab-btn.active .tab-counter {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            border: none;
+        }
+
+        /* Filter Toolbar */
+        .toolbar-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(16px);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 280px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 360px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #818cf8;
             pointer-events: none;
         }
 
-        .admin-container.sidebar-collapsed .sidebar-title,
-        .admin-container.sidebar-collapsed .sidebar-btn span,
-        .admin-container.sidebar-collapsed .btn-export span {
-            display: none;
-        }
-
-        .admin-container.sidebar-collapsed .sidebar-btn {
-            justify-content: center;
-            padding: 0.9rem 0.75rem;
-        }
-
-        .admin-container.sidebar-collapsed .btn-export {
-            justify-content: center;
-            padding: 0.8rem 0.75rem;
-        }
-
-        .admin-container.sidebar-collapsed .admin-main {
-            padding-left: 1.25rem;
-            padding-right: 1.25rem;
-        }
-
-        .sidebar-title {
-            padding: 0 1rem;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 1rem;
-            color: #111827;
-        }
-
-        .sidebar-title-btn {
+        .search-input {
             width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.75rem;
-            padding: 0.75rem 0.75rem;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: inherit;
-            cursor: pointer;
-            font-size: inherit;
-            font-weight: inherit;
-            text-align: left;
-        }
-
-        .sidebar-title-btn:hover {
-            background: #ffffff;
-            border-color: #e5e7eb;
-        }
-
-        .sidebar-title-btn:active {
-            transform: translateY(0.5px);
-        }
-
-        .sidebar-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-
-        .sidebar-btn {
-            background: #ffffff;
-            color: #111827;
-            border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
-            font-size: 0.95rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.75rem;
-            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
-            border: 1px solid #e5e7eb;
-        }
-
-        .sidebar-btn:hover {
-            background: #f9fafb;
-        }
-
-        .sidebar-btn.active {
-            background: #111827;
+            padding: 0.5625rem 1rem 0.5625rem 2.35rem;
+            font-size: 0.875rem;
+            background: rgba(30, 41, 59, 0.65);
+            border: 1.5px solid var(--border-main);
+            border-radius: var(--radius-lg);
             color: #ffffff;
-            border-color: #111827;
+            outline: none;
+            transition: all 0.2s ease;
         }
 
-        .sidebar-export {
-            margin-top: auto;
-            padding: 1rem;
-            border-top: 1px solid #e5e7eb;
+        .search-input:focus {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-ring), 0 0 15px rgba(99, 102, 241, 0.25);
         }
 
-        .btn-export {
-            width: 100%;
-            background: #2563eb;
+        .search-input::placeholder {
+            color: #64748b;
+        }
+
+        .select-filter {
+            padding: 0.5625rem 2rem 0.5625rem 0.875rem;
+            font-size: 0.875rem;
+            background-color: rgba(30, 41, 59, 0.65);
+            border: 1.5px solid var(--border-main);
+            border-radius: var(--radius-lg);
             color: #ffffff;
-            border: 1px solid #2563eb;
-            padding: 0.8rem;
-            border-radius: 5px;
+            outline: none;
             cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            transition: all 0.2s ease;
         }
 
-        .btn-export:hover {
-            background: #1d4ed8;
-            border-color: #1d4ed8;
+        .select-filter:focus {
+            border-color: var(--accent);
+            background-color: rgba(30, 41, 59, 0.95);
         }
 
-        .admin-content {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-width: 0;
+        .select-filter option {
+            background-color: #0f172a;
+            color: #ffffff;
         }
 
-        .admin-main {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-            background: #ffffff;
-        }
-
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #2d3436;
-            margin-bottom: 2rem;
-            border-bottom: 3px solid #e5e7eb;
-            padding-bottom: 1rem;
-        }
-
-        .summary-and-filters {
-            display: flex;
-            gap: 1rem;
-            align-items: stretch;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-        }
-
-        .summary-and-filters .count-box {
-            flex: 0 0 260px;
-            min-width: 240px;
-            margin-bottom: 0;
-        }
-
-        .summary-and-filters .filter-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        .filter-group {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            border: 1px solid #e5e7eb;
-        }
-
-        .filter-item {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .filter-label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #2d3436;
-            margin-bottom: 0.5rem;
-        }
-
-        .filter-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9rem;
-        }
-
-        .count-box {
-            background: #ffffff;
-            color: #111827;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            text-align: center;
-            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
-            border: 1px solid #e5e7eb;
-        }
-
-        .count-box h3 {
-            font-size: 0.95rem;
-            opacity: 0.85;
-            margin-bottom: 0.5rem;
-            color: #374151;
-        }
-
-        .count-box .number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #111827;
-        }
-
-        .table-wrapper {
-            background: white;
-            border-radius: 8px;
+        /* Modern Table Card */
+        .table-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
             overflow: hidden;
-            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
-            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(16px);
         }
 
-        table {
+        .mrc-table {
             width: 100%;
             border-collapse: collapse;
-        }
-
-        table thead {
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        table th {
-            padding: 1rem;
             text-align: left;
+        }
+
+        .mrc-table th {
+            background: rgba(30, 27, 75, 0.65);
+            padding: 0.875rem 1.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #c7d2fe;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-main);
+        }
+
+        .mrc-table td {
+            padding: 0.875rem 1.25rem;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+
+        .mrc-table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        .mrc-table tbody tr:hover {
+            background-color: rgba(49, 46, 129, 0.35);
+        }
+
+        .mrc-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .td-num {
             font-weight: 600;
-            color: #2d3436;
-            font-size: 0.9rem;
+            color: #94a3b8;
+            font-size: 0.8125rem;
+        }
+        .td-nama {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 0.875rem;
+        }
+        .td-instansi {
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+        .badge-ulasan-senang {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            font-weight: 700;
+        }
+        .badge-ulasan-menarik,
+        .badge-ulasan-biasa {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            border: 1px solid rgba(129, 140, 248, 0.4);
+            font-weight: 700;
+        }
+        .badge-ulasan-unik {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            font-weight: 700;
+        }
+        .badge-ulasan-sedih {
+            background: rgba(225, 29, 72, 0.2);
+            color: #fda4af;
+            border: 1px solid rgba(251, 113, 133, 0.4);
+            font-weight: 700;
         }
 
-        table tbody tr {
-            border-bottom: 1px solid #dee2e6;
-            transition: background-color 0.2s;
-        }
-
-        table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        table td {
-            padding: 1rem;
-            font-size: 0.9rem;
-            color: #495057;
-        }
-
-        .action-buttons {
+        /* Table Action Buttons */
+        .action-cell {
             display: flex;
-            gap: 0.5rem;
             align-items: center;
+            gap: 0.5rem;
         }
 
-        .btn-action {
-            border: none;
-            padding: 0.6rem 0.8rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
+        .btn-table-action {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-main);
+            background: rgba(30, 41, 59, 0.7);
+            color: #cbd5e1;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
 
-        .btn-preview {
-            background: #e3f2fd;
-            color: #1976d2;
+        .btn-table-action:hover {
+            background: rgba(49, 46, 129, 0.8);
+            color: #ffffff;
+            border-color: var(--border-hover);
         }
 
-        .btn-preview:hover {
-            background: #bbdefb;
+        .btn-table-action.btn-del:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-color: #ef4444;
         }
 
-        .btn-edit {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-
-        .btn-edit:hover {
-            background: #ffe0b2;
-        }
-
-        .btn-delete {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-
-        .btn-delete:hover {
-            background: #ffcdd2;
-        }
-
-        /* Modal Styles */
-        .modal {
+        /* Modal Backdrop & Dialog */
+        .modal-backdrop {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.show {
-            display: flex;
-            justify-content: center;
+            inset: 0;
+            background: rgba(11, 15, 30, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 100;
             align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .modal-backdrop.show {
+            display: flex;
         }
 
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 600px;
-            width: 90%;
+        .modal-card {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: var(--radius-2xl);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(99, 102, 241, 0.3);
+            border: 1px solid var(--border-main);
+            color: #ffffff;
+            width: 100%;
+            max-width: 580px;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s;
+            position: relative;
+            animation: modalFadeUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(20px);
         }
 
-        @keyframes slideUp {
+        @keyframes modalFadeUp {
             from {
-                transform: translateY(50px);
                 opacity: 0;
+                transform: scale(0.96) translateY(8px);
             }
             to {
-                transform: translateY(0);
                 opacity: 1;
+                transform: scale(1) translateY(0);
             }
         }
 
         .modal-header {
+            padding: 1.25rem 1.75rem;
+            border-bottom: 1px solid var(--border-main);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 1rem;
+            justify-content: space-between;
         }
 
         .modal-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2d3436;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #ffffff;
         }
 
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
+        .modal-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
             cursor: pointer;
-            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .modal-close:hover {
-            color: #2d3436;
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
         }
 
         .modal-body {
-            margin-bottom: 1.5rem;
-        }
-
-        .preview-item {
-            margin-bottom: 1.5rem;
-        }
-
-        .preview-label {
-            font-weight: 600;
-            color: #2d3436;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .preview-value {
-            color: #495057;
-            font-size: 0.95rem;
-            padding: 0.5rem 0;
-        }
-
-        .preview-grid {
-            display: grid;
-            grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.4fr);
-            gap: 1.5rem;
-            align-items: start;
-            margin-bottom: 1.75rem;
-        }
-
-        .preview-left,
-        .preview-right {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .preview-photo-box,
-        .preview-signature-box {
-            border-radius: 16px;
-            overflow: hidden;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 0 rgba(17,24,39,0.04);
-        }
-
-        .preview-photo-box img,
-        .preview-signature-box img {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
-        }
-
-        .preview-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
-        .preview-label {
-            font-weight: 700;
-            color: #1f2937;
-            font-size: 0.95rem;
-        }
-
-        .preview-value {
-            color: #374151;
-            font-size: 1.05rem;
-            padding: 0.75rem 1rem;
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .preview-signature {
-            margin-top: 0.5rem;
-        }
-
-        .preview-image {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #2d3436;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9rem;
-        }
-
-        .form-input,
-        .modal select.form-input,
-        .modal input.form-input {
-            color: #111827;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+            padding: 1.75rem;
         }
 
         .modal-footer {
+            padding: 1rem 1.75rem;
+            border-top: 1px solid var(--border-main);
             display: flex;
-            gap: 1rem;
+            align-items: center;
             justify-content: flex-end;
+            gap: 0.75rem;
+            background: transparent;
+            border-bottom-left-radius: var(--radius-2xl);
+            border-bottom-right-radius: var(--radius-2xl);
         }
 
-        .btn-modal {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+        /* Preview layout inside modal */
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
         }
 
-        .btn-save {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-save:hover {
-            background: #5568d3;
-        }
-
-        .btn-cancel {
-            background: #e9ecef;
-            color: #495057;
-        }
-
-        .btn-cancel:hover {
-            background: #dee2e6;
-        }
-
-        .admin-footer {
-            background: #ffffff;
-            color: #6b7280;
-            text-align: center;
-            padding: 1.5rem;
-            font-size: 0.85rem;
-            border-top: 1px solid #e5e7eb;
-            /* Override global footer styles */
-            position: relative !important;
-        }
-
-        /* Alphabet Filter Styles */
-        .alphabet-filter-container {
+        .preview-img-container {
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            border: 1px solid var(--border-main);
+            background: #0f172a;
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            margin-top: 0.75rem;
-            width: 100%;
-        }
-
-        .alphabet-btn {
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            color: #374151;
-            padding: 0.35rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .alphabet-btn:hover {
-            background: #e5e7eb;
-            color: #111827;
-            transform: translateY(-1px);
-        }
-
-        .alphabet-btn.active {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1);
-        }
-
-        /* Sort Button Styles */
-        .sort-btn {
-            width: 42px;
-            height: 42px;
-            padding: 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #ffffff;
-            color: #374151;
-            cursor: pointer;
-            display: inline-flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s ease;
+            height: 180px;
         }
 
-        .sort-btn:hover {
-            background: #f9fafb;
+        .preview-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-meta-item {
+            margin-bottom: 0.875rem;
+        }
+
+        .preview-meta-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
+        }
+
+        .preview-meta-value {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .preview-sig-container {
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-main);
+            background: #ffffff;
+            padding: 0.5rem;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-sig-container img {
+            max-height: 90px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        /* ══════════════════════════════════════════════
+           LIGHT MODE — Modern Clean
+        ══════════════════════════════════════════════ */
+        [data-theme="light"] .dashboard-layout {
+            background-color: #f8fafc;
+        }
+
+        [data-theme="light"] .page-title {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .page-subtitle {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .stat-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        }
+
+        [data-theme="light"] .stat-card:hover {
             border-color: #cbd5e1;
-            color: #111827;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
         }
 
-        .sort-btn.active {
-            background: #eff6ff;
-            border-color: #3b82f6;
-            color: #1d4ed8;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        [data-theme="light"] .stat-card::before {
+            background: linear-gradient(to right, #090a0f, #475569);
         }
 
-        /* Table Row Fade In Animation */
-        @keyframes tableRowFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(4px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        [data-theme="light"] .stat-val {
+            color: #0f172a;
         }
 
-        table tbody tr {
-            animation: tableRowFadeIn 0.25s ease forwards;
+        [data-theme="light"] .stat-label {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .stat-desc {
+            color: #94a3b8;
+        }
+
+        [data-theme="light"] .stat-icon-wrapper {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Tabs */
+        [data-theme="light"] .tabs-header {
+            border-bottom-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .tab-btn {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .tab-btn:hover {
+            color: #0f172a;
+            background: #f1f5f9;
+        }
+
+        [data-theme="light"] .tab-btn.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+        }
+
+        [data-theme="light"] .tab-counter {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .tab-btn.active .tab-counter {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            border: none;
+        }
+
+        /* Toolbar */
+        [data-theme="light"] .toolbar-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        }
+
+        [data-theme="light"] .search-icon {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .search-input {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .search-input:focus {
+            background: #ffffff;
+            border-color: #0f172a;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+        }
+
+        [data-theme="light"] .search-input::placeholder {
+            color: #94a3b8;
+        }
+
+        [data-theme="light"] .select-filter {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        [data-theme="light"] .select-filter:focus {
+            background-color: #ffffff;
+            border-color: #0f172a;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+        }
+
+        [data-theme="light"] .select-filter option {
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+
+        /* Table */
+        [data-theme="light"] .table-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        }
+
+        [data-theme="light"] .mrc-table th {
+            background: #f1f5f9;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        [data-theme="light"] .mrc-table td {
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0.95rem 1.25rem;
+        }
+
+        [data-theme="light"] .mrc-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        [data-theme="light"] .td-num {
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        [data-theme="light"] .td-nama {
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+
+        [data-theme="light"] .td-instansi {
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        [data-theme="light"] .badge-guru {
+            background-color: #eef2ff !important;
+            color: #312e81 !important;
+            border: 1px solid #c7d2fe !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .badge-siswa {
+            background-color: #faf5ff !important;
+            color: #581c87 !important;
+            border: 1px solid #e9d5ff !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .badge-ulasan-senang {
+            background: #ecfdf5 !important;
+            color: #065f46 !important;
+            border: 1px solid #a7f3d0 !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .badge-ulasan-menarik,
+        [data-theme="light"] .badge-ulasan-biasa {
+            background: #eff6ff !important;
+            color: #1e40af !important;
+            border: 1px solid #bfdbfe !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .badge-ulasan-unik {
+            background: #fffbeb !important;
+            color: #92400e !important;
+            border: 1px solid #fde68a !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .badge-ulasan-sedih {
+            background: #fff1f2 !important;
+            color: #9f1239 !important;
+            border: 1px solid #fecdd3 !important;
+            font-weight: 700 !important;
+        }
+
+        [data-theme="light"] .btn-table-action {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        [data-theme="light"] .btn-table-action:hover {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+
+        [data-theme="light"] .btn-table-action.btn-del:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        /* Modals in Admin */
+        [data-theme="light"] .modal-backdrop {
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        [data-theme="light"] .modal-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.2);
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .modal-header {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        [data-theme="light"] .modal-title {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .modal-close-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        [data-theme="light"] .modal-close-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .modal-footer {
+            background: #ffffff;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        [data-theme="light"] .preview-img-container {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .preview-sig-container {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .preview-meta-label {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .preview-meta-value {
+            color: #0f172a;
         }
     </style>
 </head>
-<body>
-    <div class="admin-container" id="adminContainer">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar" aria-label="Sidebar">
-            <div class="sidebar-title">
-                <button type="button" class="sidebar-title-btn" onclick="collapseSidebar()" title="Kecilkan sidebar">
-                    Dashboard Admin
-                </button>
-            </div>
-            <div class="sidebar-menu">
-                <button class="sidebar-btn active" onclick="switchSection('teacher', event)">
-                    <span>Teacher</span>
-                </button>
-                <button class="sidebar-btn" onclick="switchSection('student', event)">
-                    <span>Student</span>
-                </button>
-            </div>
-            <div class="sidebar-export">
-                <button class="btn-export" onclick="exportData()">
-                    <span>Export Data</span>
-                </button>
-            </div>
-        </aside>
+<body class="dashboard-layout">
 
-        <div class="admin-content">
-            <!-- Navbar (only for content area width) -->
-            <nav class="admin-navbar">
-                <div class="navbar-left">
-                    <button type="button" class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Buka sidebar" title="Buka sidebar">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M4 6H20M4 12H20M4 18H20" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                    <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang">
-                    <span>PAMERAN TKI - ADMIN</span>
+    <!-- Sticky Navbar -->
+    <header class="mrc-navbar">
+        <a href="/admin/dashboard" class="mrc-nav-brand">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang" class="mrc-brand-logo">
+                <img src="{{ asset('img/logomrc.png') }}" alt="Logo MRC" class="mrc-brand-logo" style="height: 38px; width: auto; object-fit: contain;">
+            </div>
+            <div class="mrc-brand-text">
+                <div class="mrc-brand-title">
+                    <span>BUTAGI</span>
+                    <span class="mrc-brand-badge">ADMIN PANEL</span>
                 </div>
-                <div class="navbar-right">
-                    <form action="/logout" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn-logout">Logout</button>
-                    </form>
-                </div>
-            </nav>
+                <span class="mrc-brand-sub">SMKN 1 Subang</span>
+            </div>
+        </a>
 
-            <!-- Main Content -->
-            <main class="admin-main">
-                <!-- Teacher Section -->
-                <section id="teacher" class="section active">
-                    <h1 class="section-title">KEHADIRAN GURU</h1>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <!-- Theme Toggle Button -->
+            <button type="button" class="theme-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Ganti Tema (Dark / Light)" title="Ganti Tema">
+                <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                </svg>
+                <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                    <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                </svg>
+                <span class="theme-btn-text">Dark</span>
+            </button>
 
-                    <div class="summary-and-filters">
-                        <div class="count-box">
-                            <h3>Total Guru</h3>
-                            <div class="number" id="teacher-count">0</div>
-                        </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #ffffff; padding: 0.35rem 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: var(--radius-full);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span style="font-weight: 600; color: #ffffff;">{{ session('admin_username') ?? 'Admin' }}</span>
+            </div>
 
-                        <div class="filter-group">
-                            <div class="filter-item" style="flex: 1; min-width: 250px;">
-                                <label class="filter-label">Cari Nama Guru</label>
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <input type="text" class="filter-input" id="teacher-search" placeholder="Masukkan nama guru">
-                                    <button type="button" id="teacher-sort-btn" class="sort-btn" onclick="toggleTeacherSort()" title="Urutan: Default (Klik untuk A - Z)">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m15 9-3-3-3 3M9 15l3 3 3-3"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="table-wrapper">
-                        <table id="teacher-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nama</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="teacher-tbody">
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Student Section -->
-                <section id="student" class="section">
-                    <h1 class="section-title">KEHADIRAN SISWA</h1>
-
-                    <div class="summary-and-filters">
-                        <div class="count-box">
-                            <h3>Total Siswa</h3>
-                            <div class="number" id="student-count">0</div>
-                        </div>
-
-                        <div class="filter-group">
-                            <div class="filter-item" style="flex: 2; min-width: 250px;">
-                                <label class="filter-label">Cari Nama Siswa</label>
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <input type="text" class="filter-input" id="student-search-nama" placeholder="Masukkan nama siswa">
-                                    <button type="button" id="student-sort-btn" class="sort-btn" onclick="toggleStudentSort()" title="Urutan: Default (Klik untuk A - Z)">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m15 9-3-3-3 3M9 15l3 3 3-3"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="filter-item" style="flex: 1; min-width: 150px;">
-                                <label class="filter-label">Filter Kelas</label>
-                                <select class="filter-input" id="student-search-kelas">
-                                    <option value="">Semua Kelas</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="table-wrapper">
-                        <table id="student-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nama</th>
-                                    <th>Kelas</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="student-tbody">
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            </main>
-
-            <!-- Footer (only for content area width) -->
-            <footer class="admin-footer">
-                <p>&copy; 2026 SMKN 1 Subang - Pameran TKI. All rights reserved.</p>
-            </footer>
+            <form action="/logout" method="POST" style="margin: 0;">
+                @csrf
+                <button type="submit" class="btn-mrc btn-mrc-outline" style="padding: 0.42rem 0.85rem; font-size: 0.8125rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Keluar</span>
+                </button>
+            </form>
         </div>
-    </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="dashboard-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Dashboard Rekapitulasi</h1>
+                <p class="page-subtitle">Pantau dan kelola kehadiran pengunjung pameran secara real-time</p>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" onclick="exportData()" class="btn-mrc btn-mrc-accent">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Ekspor Laporan PDF</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4 Stat Cards ala MRC -->
+        <div class="stats-grid">
+            <!-- Card 1: Total Tamu -->
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">TOTAL PENGUNJUNG</div>
+                    <div class="stat-val" id="stat-total-count">0</div>
+                    <div class="stat-desc">Akumulasi Instansi & Sekolah</div>
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Card 2: Total Instansi -->
+            <div class="stat-card stat-guru">
+                <div>
+                    <div class="stat-label">TAMU INSTANSI</div>
+                    <div class="stat-val" id="stat-instansi-count">0</div>
+                    <div class="stat-desc">Perusahaan, Industri & Umum</div>
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(79, 70, 229, 0.25); color: #a5b4fc; border: 1px solid rgba(129, 140, 248, 0.3);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+                        <path d="M9 22v-4h6v4"/>
+                        <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Card 3: Total Sekolah -->
+            <div class="stat-card stat-siswa">
+                <div>
+                    <div class="stat-label">TAMU SEKOLAH</div>
+                    <div class="stat-val" id="stat-sekolah-count">0</div>
+                    <div class="stat-desc">Siswa, Guru & Sekolah Lain</div>
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(168, 85, 247, 0.25); color: #d8b4fe; border: 1px solid rgba(192, 132, 252, 0.3);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Card 4: Kepuasan Pengunjung -->
+            <div class="stat-card stat-kelas">
+                <div>
+                    <div class="stat-label">ULASAN SENANG</div>
+                    <div class="stat-val" id="stat-ulasan-count">0</div>
+                    <div class="stat-desc">Pengunjung Sangat Puas 😊</div>
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.3);">
+                    <span style="font-size: 1.35rem;">😊</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Header -->
+        <div class="tabs-header">
+            <button type="button" class="tab-btn active" id="tabInstansiBtn" onclick="switchTab('instansi')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+                    <path d="M9 22v-4h6v4"/>
+                </svg>
+                <span>Tamu Instansi</span>
+                <span class="tab-counter" id="instansi-tab-count">0</span>
+            </button>
+
+            <button type="button" class="tab-btn" id="tabSekolahBtn" onclick="switchTab('sekolah')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+                <span>Tamu Sekolah</span>
+                <span class="tab-counter" id="sekolah-tab-count">0</span>
+            </button>
+        </div>
+
+        <!-- Filter Toolbar -->
+        <div class="toolbar-card">
+            <!-- Left Filter Controls -->
+            <div class="toolbar-left">
+                <!-- Instansi Search -->
+                <div class="search-box" id="instansiSearchBox">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="instansi-search" class="search-input" placeholder="Cari nama atau instansi...">
+                </div>
+
+                <!-- Sekolah Search & Asal Sekolah Filter -->
+                <div class="search-box" id="sekolahSearchBox" style="display: none;">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="sekolah-search-nama" class="search-input" placeholder="Cari nama pengunjung...">
+                </div>
+
+                <select id="sekolah-search-filter" class="select-filter" style="display: none;">
+                    <option value="">Semua Asal Sekolah</option>
+                </select>
+
+                <!-- Sort Toggle -->
+                <button type="button" id="sortToggleBtn" class="btn-mrc btn-mrc-outline" style="padding: 0.5rem 0.875rem;" title="Urutkan Nama A-Z">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 16 4 4 4-4M7 20V4 M16 10V6a2 2 0 0 1 4 0v4 M16 8h4 M16 14h4l-4 6h4"/>
+                    </svg>
+                    <span id="sortLabelText">Urutkan: Normal</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Card -->
+        <div class="table-card">
+            <!-- Instansi Table -->
+            <div id="instansiTableContainer">
+                <table class="mrc-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">No</th>
+                            <th>Nama Pengunjung</th>
+                            <th>Instansi / Lembaga</th>
+                            <th style="width: 140px;">Ulasan</th>
+                            <th style="width: 130px;">Status</th>
+                            <th style="width: 140px; text-align: right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="instansi-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Memuat data instansi...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sekolah Table -->
+            <div id="sekolahTableContainer" style="display: none;">
+                <table class="mrc-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">No</th>
+                            <th>Nama Pengunjung</th>
+                            <th>Asal Sekolah</th>
+                            <th style="width: 140px;">Ulasan</th>
+                            <th style="width: 130px;">Status</th>
+                            <th style="width: 140px; text-align: right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sekolah-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Memuat data sekolah...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
     <!-- Preview Modal -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content">
+    <div class="modal-backdrop" id="previewModal">
+        <div class="modal-card">
             <div class="modal-header">
-                <h2 class="modal-title">Detail Data</h2>
-                <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+                <h3 class="modal-title">Detail Pengunjung</h3>
+                <button type="button" class="modal-close-btn" onclick="closePreviewModal()" aria-label="Tutup modal">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
             <div class="modal-body" id="previewBody">
+                <!-- Filled via JS -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-mrc btn-mrc-outline" onclick="closePreviewModal()">Tutup</button>
             </div>
         </div>
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
+    <div class="modal-backdrop" id="editModal">
+        <div class="modal-card">
             <div class="modal-header">
-                <h2 class="modal-title">Edit Data</h2>
-                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                <h3 class="modal-title">Ubah Data Tamu</h3>
+                <button type="button" class="modal-close-btn" onclick="closeEditModal()" aria-label="Tutup modal">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
             <form id="editForm" onsubmit="submitEdit(event)">
                 <div class="modal-body">
                     <input type="hidden" id="editId">
-                    <input type="hidden" id="editSection">
 
-                    <div class="form-group">
-                        <label class="form-label">Nama</label>
-                        <input type="text" class="form-input" id="editNama" required>
+                    <div class="mrc-form-group">
+                        <label class="mrc-label" for="editNama">Nama Lengkap</label>
+                        <input type="text" id="editNama" class="mrc-input" required>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <select class="form-input" id="editStatus" onchange="toggleClassField()" required>
-                            <option value="">Pilih Status</option>
-                            <option value="guru">Guru</option>
-                            <option value="siswa">Siswa</option>
+                    <div class="mrc-form-group">
+                        <label class="mrc-label" for="editStatus">Status</label>
+                        <select id="editStatus" class="select-filter" style="width: 100%;" onchange="toggleEditFields()">
+                            <option value="instansi">Instansi</option>
+                            <option value="sekolah">Sekolah</option>
                         </select>
                     </div>
 
-                    <div class="form-group" id="classFieldGroup" style="display: none;">
-                        <label class="form-label">Kelas</label>
-                        <input type="text" class="form-input" id="editKelas" list="classList" placeholder="Pilih atau ketik kelas">
-                        <datalist id="classList">
-                            <option value="X PPLG 1"></option>
-                            <option value="X PPLG 2"></option>
-                            <option value="X TJKT 1"></option>
-                            <option value="X TJKT 2"></option>
-                            <option value="XI TKJ 2"></option>
-                        </datalist>
+                    <div class="mrc-form-group" id="editInstansiGroup">
+                        <label class="mrc-label" for="editInstansi">Nama Instansi</label>
+                        <input type="text" id="editInstansi" class="mrc-input" placeholder="Nama Instansi / Perusahaan">
+                    </div>
+
+                    <div class="mrc-form-group" id="editSekolahGroup" style="display: none;">
+                        <label class="mrc-label" for="editAsalSekolah">Asal Sekolah</label>
+                        <input type="text" id="editAsalSekolah" class="mrc-input" placeholder="SMKN 1 Subang">
+                    </div>
+
+                    <div class="mrc-form-group">
+                        <label class="mrc-label" for="editUlasan">Ulasan Pengunjung</label>
+                        <select id="editUlasan" class="select-filter" style="width: 100%;">
+                            <option value="senang">😊 Senang</option>
+                            <option value="menarik">🤩 Menarik</option>
+                            <option value="unik">🤔 Unik</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-modal btn-cancel" onclick="closeEditModal()">Batal</button>
-                    <button type="submit" class="btn-modal btn-save">Simpan</button>
+                    <button type="button" class="btn-mrc btn-mrc-outline" onclick="closeEditModal()">Batal</button>
+                    <button type="submit" class="btn-mrc btn-mrc-accent">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Script Logic -->
     <script>
-        let currentData = [];
-        let currentSection = 'teacher';
-        let teacherSort = ''; // '', 'asc', 'desc'
-        let studentSort = ''; // '', 'asc', 'desc'
+        let currentSection = 'instansi';
+        let currentSort = '';
+        let totalInstansi = 0;
+        let totalSekolah = 0;
+        let totalSenang = 0;
 
-        // Switch between sections
-        function switchSection(section, evt) {
+        function switchTab(section) {
             currentSection = section;
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(section).classList.add('active');
-            document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
-            const targetBtn = evt?.currentTarget || evt?.target;
-            if (targetBtn) targetBtn.classList.add('active');
-            
-            if (section === 'student') {
-                loadClasses();
-            }
 
-            if (section === 'teacher') {
-                loadTeachers();
+            const tabInstansiBtn = document.getElementById('tabInstansiBtn');
+            const tabSekolahBtn = document.getElementById('tabSekolahBtn');
+            const instansiTable = document.getElementById('instansiTableContainer');
+            const sekolahTable = document.getElementById('sekolahTableContainer');
+            const instansiSearchBox = document.getElementById('instansiSearchBox');
+            const sekolahSearchBox = document.getElementById('sekolahSearchBox');
+            const filterSekolah = document.getElementById('sekolah-search-filter');
+
+            if (section === 'instansi') {
+                tabInstansiBtn.classList.add('active');
+                tabSekolahBtn.classList.remove('active');
+                instansiTable.style.display = 'block';
+                sekolahTable.style.display = 'none';
+                instansiSearchBox.style.display = 'block';
+                sekolahSearchBox.style.display = 'none';
+                filterSekolah.style.display = 'none';
+                loadInstansi();
             } else {
-                loadStudents();
+                tabSekolahBtn.classList.add('active');
+                tabInstansiBtn.classList.remove('active');
+                sekolahTable.style.display = 'block';
+                instansiTable.style.display = 'none';
+                instansiSearchBox.style.display = 'none';
+                sekolahSearchBox.style.display = 'block';
+                filterSekolah.style.display = 'inline-block';
+                loadSekolah();
+                loadSchools();
             }
         }
 
-        function toggleSidebar() {
-            const container = document.getElementById('adminContainer');
-            if (!container) return;
-            container.classList.toggle('sidebar-collapsed');
-            try {
-                localStorage.setItem('adminSidebarCollapsed', container.classList.contains('sidebar-collapsed') ? '1' : '0');
-            } catch (e) {}
-        }
-
-        function collapseSidebar() {
-            const container = document.getElementById('adminContainer');
-            if (!container) return;
-            if (!container.classList.contains('sidebar-collapsed')) {
-                container.classList.add('sidebar-collapsed');
-                try {
-                    localStorage.setItem('adminSidebarCollapsed', '1');
-                } catch (e) {}
+        // Helper Emoji Ulasan
+        function getUlasanBadge(val) {
+            if (val === 'senang') {
+                return '<span class="badge-pill badge-ulasan-senang">😊 Senang</span>';
+            } else if (val === 'menarik' || val === 'biasa') {
+                return '<span class="badge-pill badge-ulasan-menarik">🤩 Menarik</span>';
+            } else if (val === 'unik' || val === 'sedih') {
+                return '<span class="badge-pill badge-ulasan-unik">🤔 Unik</span>';
+            } else {
+                return '-';
             }
         }
 
-        // Load teachers
-        function loadTeachers() {
-            const search = document.getElementById('teacher-search').value;
-            fetch(`/api/teachers?search=${search}&sort=${teacherSort}`)
+        // Load Instansi
+        function loadInstansi() {
+            const search = document.getElementById('instansi-search').value;
+            fetch(`/api/instansi?search=${encodeURIComponent(search)}&sort=${currentSort}`)
                 .then(r => r.json())
                 .then(data => {
-                    currentData = data.data;
-                    document.getElementById('teacher-count').innerText = data.count;
-                    renderTeachersTable(data.data);
-                });
+                    totalInstansi = data.count;
+                    document.getElementById('stat-instansi-count').innerText = data.count;
+                    document.getElementById('instansi-tab-count').innerText = data.count;
+                    calculateTotalStats(data.data, 'instansi');
+                    renderInstansi(data.data);
+                })
+                .catch(err => console.error('Error loading instansi:', err));
         }
 
-        // Load students
-        function loadStudents() {
-            const searchNama = document.getElementById('student-search-nama').value;
-            const searchKelas = document.getElementById('student-search-kelas').value;
-            fetch(`/api/students?search_nama=${searchNama}&search_kelas=${searchKelas}&sort=${studentSort}`)
+        // Load Sekolah
+        function loadSekolah() {
+            const searchNama = document.getElementById('sekolah-search-nama').value;
+            const searchSekolah = document.getElementById('sekolah-search-filter').value;
+            fetch(`/api/sekolah?search_nama=${encodeURIComponent(searchNama)}&search_sekolah=${encodeURIComponent(searchSekolah)}&sort=${currentSort}`)
                 .then(r => r.json())
                 .then(data => {
-                    currentData = data.data;
-                    document.getElementById('student-count').innerText = data.count;
-                    renderStudentsTable(data.data);
-                });
+                    totalSekolah = data.count;
+                    document.getElementById('stat-sekolah-count').innerText = data.count;
+                    document.getElementById('sekolah-tab-count').innerText = data.count;
+                    calculateTotalStats(data.data, 'sekolah');
+                    renderSekolah(data.data);
+                })
+                .catch(err => console.error('Error loading sekolah:', err));
         }
 
-        function toggleTeacherSort() {
-            const btn = document.getElementById('teacher-sort-btn');
-            if (teacherSort === '') {
-                teacherSort = 'asc';
-                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4M7 20V4 M16 10V6a2 2 0 0 1 4 0v4 M16 8h4 M16 14h4l-4 6h4"/></svg>`;
-                btn.classList.add('active');
-                btn.title = "Urutan: A - Z (Klik untuk Z - A)";
-            } else if (teacherSort === 'asc') {
-                teacherSort = 'desc';
-                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 4-4 4 4M7 4v16 M16 6h4l-4 6h4 M16 20V16a2 2 0 0 1 4 0v4 M16 18h4"/></svg>`;
-                btn.classList.add('active');
-                btn.title = "Urutan: Z - A (Klik untuk Default)";
-            } else {
-                teacherSort = '';
-                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 9-3-3-3 3M9 15l3 3 3-3"/></svg>`;
-                btn.classList.remove('active');
-                btn.title = "Urutan: Default (Klik untuk A - Z)";
-            }
-            loadTeachers();
+        let instansiItemsCache = [];
+        let sekolahItemsCache = [];
+
+        function calculateTotalStats(items, source) {
+            if (source === 'instansi') instansiItemsCache = items || [];
+            if (source === 'sekolah') sekolahItemsCache = items || [];
+
+            document.getElementById('stat-total-count').innerText = totalInstansi + totalSekolah;
+
+            const allItems = [...instansiItemsCache, ...sekolahItemsCache];
+            const senangCount = allItems.filter(i => (i.ulasan || '') === 'senang').length;
+            document.getElementById('stat-ulasan-count').innerText = senangCount;
         }
 
-        function toggleStudentSort() {
-            const btn = document.getElementById('student-sort-btn');
-            if (studentSort === '') {
-                studentSort = 'asc';
-                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4M7 20V4 M16 10V6a2 2 0 0 1 4 0v4 M16 8h4 M16 14h4l-4 6h4"/></svg>`;
-                btn.classList.add('active');
-                btn.title = "Urutan: A - Z (Klik untuk Z - A)";
-            } else if (studentSort === 'asc') {
-                studentSort = 'desc';
-                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 4-4 4 4M7 4v16 M16 6h4l-4 6h4 M16 20V16a2 2 0 0 1 4 0v4 M16 18h4"/></svg>`;
-                btn.classList.add('active');
-                btn.title = "Urutan: Z - A (Klik untuk Default)";
-            } else {
-                studentSort = '';
-                btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 9-3-3-3 3M9 15l3 3 3-3"/></svg>`;
-                btn.classList.remove('active');
-                btn.title = "Urutan: Default (Klik untuk A - Z)";
-            }
-            loadStudents();
-        }
-
-        // Load unique classes for filter
-        function loadClasses() {
-            fetch('/api/classes')
+        function loadSchools() {
+            fetch('/api/schools')
                 .then(r => r.json())
-                .then(classes => {
-                    const select = document.getElementById('student-search-kelas');
+                .then(schools => {
+                    const select = document.getElementById('sekolah-search-filter');
                     const currentValue = select.value;
-                    
-                    select.innerHTML = '<option value="">Semua Kelas</option>';
-                    classes.forEach(c => {
-                        const option = document.createElement('option');
-                        option.value = c;
-                        option.textContent = c;
-                        if (c === currentValue) option.selected = true;
-                        select.appendChild(option);
+                    select.innerHTML = '<option value="">Semua Asal Sekolah</option>';
+                    schools.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s;
+                        opt.textContent = s;
+                        if (s === currentValue) opt.selected = true;
+                        select.appendChild(opt);
                     });
-                });
+                })
+                .catch(err => console.error('Error loading schools list:', err));
         }
 
-        // Render teachers table
-        function renderTeachersTable(data) {
-            const tbody = document.getElementById('teacher-tbody');
+        function renderInstansi(data) {
+            const tbody = document.getElementById('instansi-tbody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Tidak ada data tamu instansi ditemukan.</td></tr>`;
+                return;
+            }
+
             tbody.innerHTML = data.map(item => `
                 <tr>
-                    <td>${item.id}</td>
-                    <td>${item.nama}</td>
-                    <td>${item.status}</td>
+                    <td class="td-num">${item.id}</td>
+                    <td class="td-nama">${escapeHtml(item.nama)}</td>
+                    <td class="td-instansi">${escapeHtml(item.instansi || '-')}</td>
+                    <td>${getUlasanBadge(item.ulasan)}</td>
+                    <td><span class="badge-pill badge-guru">Instansi</span></td>
                     <td>
-                        <div class="action-buttons">
-                            <button class="btn-action btn-preview" onclick="openPreview(${item.db_id}, 'teacher')">👁️</button>
-                            <button class="btn-action btn-edit" onclick="openEdit(${item.db_id}, 'teacher')">✏️</button>
-                            <button class="btn-action btn-delete" onclick="deleteData(${item.db_id})">🗑️</button>
+                        <div class="action-cell" style="justify-content: flex-end;">
+                            <button type="button" class="btn-table-action" onclick="openPreview(${item.db_id})" title="Lihat Foto & TTD">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button type="button" class="btn-table-action" onclick="openEdit(${item.db_id})" title="Edit Data">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                            <button type="button" class="btn-table-action btn-del" onclick="deleteData(${item.db_id})" title="Hapus Data">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
                         </div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // Render students table
-        function renderStudentsTable(data) {
-            const tbody = document.getElementById('student-tbody');
+        function renderSekolah(data) {
+            const tbody = document.getElementById('sekolah-tbody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Tidak ada data tamu sekolah ditemukan.</td></tr>`;
+                return;
+            }
+
             tbody.innerHTML = data.map(item => `
                 <tr>
-                    <td>${item.id}</td>
-                    <td>${item.nama}</td>
-                    <td>${item.kelas}</td>
-                    <td>${item.status}</td>
+                    <td class="td-num">${item.id}</td>
+                    <td class="td-nama">${escapeHtml(item.nama)}</td>
+                    <td class="td-instansi">${escapeHtml(item.asal_sekolah || '-')}</td>
+                    <td>${getUlasanBadge(item.ulasan)}</td>
+                    <td><span class="badge-pill badge-siswa">Sekolah</span></td>
                     <td>
-                        <div class="action-buttons">
-                            <button class="btn-action btn-preview" onclick="openPreview(${item.db_id}, 'student')">👁️</button>
-                            <button class="btn-action btn-edit" onclick="openEdit(${item.db_id}, 'student')">✏️</button>
-                            <button class="btn-action btn-delete" onclick="deleteData(${item.db_id})">🗑️</button>
+                        <div class="action-cell" style="justify-content: flex-end;">
+                            <button type="button" class="btn-table-action" onclick="openPreview(${item.db_id})" title="Lihat Foto & TTD">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button type="button" class="btn-table-action" onclick="openEdit(${item.db_id})" title="Edit Data">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                            <button type="button" class="btn-table-action btn-del" onclick="deleteData(${item.db_id})" title="Hapus Data">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
                         </div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // Preview modal
-        function openPreview(id, section) {
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Toggle Sort
+        document.getElementById('sortToggleBtn').addEventListener('click', function() {
+            const label = document.getElementById('sortLabelText');
+            if (currentSort === '') {
+                currentSort = 'asc';
+                label.innerText = 'Urutan: A - Z';
+            } else if (currentSort === 'asc') {
+                currentSort = 'desc';
+                label.innerText = 'Urutan: Z - A';
+            } else {
+                currentSort = '';
+                label.innerText = 'Urutan: Normal';
+            }
+
+            if (currentSection === 'instansi') loadInstansi();
+            else loadSekolah();
+        });
+
+        // Modals
+        function openPreview(id) {
             fetch(`/api/data/${id}`)
                 .then(r => r.json())
                 .then(data => {
                     const fotoHTML = data.foto ? `
-                        <div class="preview-photo-box">
-                            <img src="/storage/${data.foto}" alt="Foto" class="preview-image" style="max-height: 340px;">
+                        <div class="preview-img-container">
+                            <img src="/storage/${data.foto}" alt="Foto">
                         </div>
                     ` : `
-                        <div class="preview-photo-box" style="padding: 2rem; text-align: center; color: #6b7280;">
-                            Foto belum tersedia
+                        <div class="preview-img-container" style="background:#f1f5f9; color:#94a3b8; font-size:0.8125rem;">
+                            Tidak ada foto
                         </div>
                     `;
 
-                    let infoHTML = `
-                        <div class="preview-item">
-                            <div class="preview-label">Nama</div>
-                            <div class="preview-value">${data.nama}</div>
-                        </div>
-                        <div class="preview-item">
-                            <div class="preview-label">Status</div>
-                            <div class="preview-value">${data.status}</div>
-                        </div>
-                    `;
-
-                    if (data.kelas && section === 'student') {
-                        infoHTML += `
-                            <div class="preview-item">
-                                <div class="preview-label">Kelas</div>
-                                <div class="preview-value">${data.kelas}</div>
-                            </div>
-                        `;
-                    }
-
-                    const signatureHTML = data.tanda_tangan ? `
-                        <div class="preview-signature-box">
-                            <img src="/storage/${data.tanda_tangan}" alt="Tanda Tangan" class="preview-image" style="max-height: 260px;">
+                    const ttdHTML = data.tanda_tangan ? `
+                        <div class="preview-sig-container">
+                            <img src="/storage/${data.tanda_tangan}" alt="Tanda Tangan">
                         </div>
                     ` : `
-                        <div class="preview-signature-box" style="padding: 1.25rem; color: #6b7280; text-align: center;">
-                            Tanda tangan belum tersedia
+                        <div class="preview-sig-container" style="background:#f8fafc; color:#94a3b8; font-size:0.8125rem;">
+                            Tanda tangan dilewati
                         </div>
                     `;
 
-                    const previewHTML = `
+                    document.getElementById('previewBody').innerHTML = `
                         <div class="preview-grid">
-                            <div class="preview-left">
-                                <div class="preview-label">Foto</div>
+                            <div>
+                                <div class="preview-meta-label">Foto Pengunjung</div>
                                 ${fotoHTML}
                             </div>
-                            <div class="preview-right">
-                                ${infoHTML}
+                            <div>
+                                <div class="preview-meta-item">
+                                    <div class="preview-meta-label">Nama Lengkap</div>
+                                    <div class="preview-meta-value">${escapeHtml(data.nama)}</div>
+                                </div>
+                                <div class="preview-meta-item">
+                                    <div class="preview-meta-label">Status</div>
+                                    <div class="preview-meta-value">${data.status === 'instansi' ? '<span class="badge-pill badge-guru">Instansi</span>' : '<span class="badge-pill badge-siswa">Sekolah</span>'}</div>
+                                </div>
+                                ${data.status === 'instansi' ? `
+                                <div class="preview-meta-item">
+                                    <div class="preview-meta-label">Instansi / Lembaga</div>
+                                    <div class="preview-meta-value">${escapeHtml(data.instansi || '-')}</div>
+                                </div>` : `
+                                <div class="preview-meta-item">
+                                    <div class="preview-meta-label">Asal Sekolah</div>
+                                    <div class="preview-meta-value">${escapeHtml(data.asal_sekolah || '-')}</div>
+                                </div>`}
+                                <div class="preview-meta-item">
+                                    <div class="preview-meta-label">Penilaian Ulasan</div>
+                                    <div class="preview-meta-value">${getUlasanBadge(data.ulasan)}</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="preview-signature">
-                            <div class="preview-label">Tanda Tangan</div>
-                            ${signatureHTML}
+                        <div>
+                            <div class="preview-meta-label" style="margin-bottom: 0.35rem;">Tanda Tangan</div>
+                            ${ttdHTML}
                         </div>
                     `;
 
-                    document.getElementById('previewBody').innerHTML = previewHTML;
                     document.getElementById('previewModal').classList.add('show');
                 });
         }
@@ -1207,17 +1400,20 @@
             document.getElementById('previewModal').classList.remove('show');
         }
 
-        // Edit modal
-        function openEdit(id, section) {
+        function openEdit(id) {
             fetch(`/api/data/${id}`)
                 .then(r => r.json())
                 .then(data => {
                     document.getElementById('editId').value = id;
-                    document.getElementById('editSection').value = section;
                     document.getElementById('editNama').value = data.nama;
-                    document.getElementById('editStatus').value = data.status;
-                    document.getElementById('editKelas').value = data.kelas || '';
-                    toggleClassField();
+                    document.getElementById('editStatus').value = data.status === 'guru' ? 'instansi' : (data.status === 'siswa' ? 'sekolah' : data.status);
+                    document.getElementById('editInstansi').value = data.instansi || '';
+                    document.getElementById('editAsalSekolah').value = data.asal_sekolah || '';
+                    let ulasanVal = data.ulasan || 'senang';
+                    if (ulasanVal === 'biasa') ulasanVal = 'menarik';
+                    if (ulasanVal === 'sedih') ulasanVal = 'unik';
+                    document.getElementById('editUlasan').value = ulasanVal;
+                    toggleEditFields();
                     document.getElementById('editModal').classList.add('show');
                 });
         }
@@ -1226,121 +1422,141 @@
             document.getElementById('editModal').classList.remove('show');
         }
 
-        function toggleClassField() {
+        function toggleEditFields() {
             const status = document.getElementById('editStatus').value;
-            const classField = document.getElementById('classFieldGroup');
-            if (status === 'siswa') {
-                classField.style.display = 'block';
+            const instansiGroup = document.getElementById('editInstansiGroup');
+            const sekolahGroup = document.getElementById('editSekolahGroup');
+            if (status === 'instansi') {
+                instansiGroup.style.display = 'block';
+                sekolahGroup.style.display = 'none';
             } else {
-                classField.style.display = 'none';
-                document.getElementById('editKelas').value = '';
+                sekolahGroup.style.display = 'block';
+                instansiGroup.style.display = 'none';
             }
         }
 
         function submitEdit(e) {
             e.preventDefault();
             const id = document.getElementById('editId').value;
-            const data = {
+            const status = document.getElementById('editStatus').value;
+            const payload = {
                 nama: document.getElementById('editNama').value,
-                status: document.getElementById('editStatus').value,
-                kelas: document.getElementById('editStatus').value === 'siswa' ? document.getElementById('editKelas').value : null,
+                status: status,
+                instansi: status === 'instansi' ? document.getElementById('editInstansi').value : null,
+                asal_sekolah: status === 'sekolah' ? document.getElementById('editAsalSekolah').value : null,
+                ulasan: document.getElementById('editUlasan').value
             };
 
             fetch(`/api/data/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             })
             .then(r => r.json())
-            .then(response => {
-                if (response.success) {
+            .then(res => {
+                if (res.success) {
                     closeEditModal();
-                    if (currentSection === 'teacher') {
-                        loadTeachers();
-                    } else {
-                        loadStudents();
-                        loadClasses();
-                    }
-                    alert('Data berhasil diperbarui');
+                    loadInstansi();
+                    loadSekolah();
+                    loadSchools();
                 }
             })
-            .catch(err => alert('Error: ' + err.message));
+            .catch(err => alert('Gagal memperbarui data: ' + err.message));
         }
 
-        // Delete data
         function deleteData(id) {
-            if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+            if (!confirm('Apakah Anda yakin ingin menghapus data pengunjung ini?')) return;
 
             fetch(`/api/data/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             })
             .then(r => r.json())
-            .then(response => {
-                if (response.success) {
-                    if (currentSection === 'teacher') {
-                        loadTeachers();
-                    } else {
-                        loadStudents();
-                        loadClasses();
-                    }
-                    alert('Data berhasil dihapus');
+            .then(res => {
+                if (res.success) {
+                    loadInstansi();
+                    loadSekolah();
+                    loadSchools();
                 }
             })
-            .catch(err => alert('Error: ' + err.message));
+            .catch(err => alert('Gagal menghapus data: ' + err.message));
         }
 
-        // Export data
         function exportData() {
             const params = new URLSearchParams();
             params.set('section', currentSection);
-
-            if (currentSection === 'teacher') {
-                const search = document.getElementById('teacher-search')?.value || '';
+            if (currentSection === 'instansi') {
+                const search = document.getElementById('instansi-search')?.value || '';
                 if (search) params.set('search', search);
-                if (teacherSort) params.set('sort', teacherSort);
             } else {
-                const searchNama = document.getElementById('student-search-nama')?.value || '';
-                const searchKelas = document.getElementById('student-search-kelas')?.value || '';
+                const searchNama = document.getElementById('sekolah-search-nama')?.value || '';
+                const searchSekolah = document.getElementById('sekolah-search-filter')?.value || '';
                 if (searchNama) params.set('search_nama', searchNama);
-                if (searchKelas) params.set('search_kelas', searchKelas);
-                if (studentSort) params.set('sort', studentSort);
+                if (searchSekolah) params.set('search_sekolah', searchSekolah);
             }
+            if (currentSort) params.set('sort', currentSort);
 
             window.location.href = `/admin/export-pdf?${params.toString()}`;
         }
 
-        // Load data on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                const collapsed = localStorage.getItem('adminSidebarCollapsed') === '1';
-                if (collapsed) document.getElementById('adminContainer')?.classList.add('sidebar-collapsed');
-            } catch (e) {}
-
-            loadTeachers();
-
-            let searchTimer;
-            function debounce(fn) {
-                clearTimeout(searchTimer);
-                searchTimer = setTimeout(fn, 300);
+        // Theme switcher logic
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('butagi_theme', theme);
+            const moon = document.querySelector('.icon-moon');
+            const sun  = document.querySelector('.icon-sun');
+            const txt  = document.querySelector('.theme-btn-text');
+            if (moon && sun) {
+                if (theme === 'light') {
+                    moon.style.display = 'block';
+                    sun.style.display  = 'none';
+                    if (txt) txt.textContent = 'Dark';
+                } else {
+                    moon.style.display = 'none';
+                    sun.style.display  = 'block';
+                    if (txt) txt.textContent = 'Light';
+                }
             }
-            document.getElementById('teacher-search').addEventListener('keyup', () => debounce(loadTeachers));
-            document.getElementById('student-search-nama').addEventListener('keyup', () => debounce(loadStudents));
-            document.getElementById('student-search-kelas').addEventListener('change', () => loadStudents());
+        }
+
+        function toggleTheme() {
+            const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyTheme(cur === 'dark' ? 'light' : 'dark');
+        }
+
+        // Init & Search Debounce
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('butagi_theme') || 'dark';
+            applyTheme(savedTheme);
+
+            loadInstansi();
+            loadSekolah();
+            loadSchools();
+
+            let timer;
+            function debounce(fn) {
+                clearTimeout(timer);
+                timer = setTimeout(fn, 250);
+            }
+
+            document.getElementById('instansi-search').addEventListener('keyup', () => debounce(loadInstansi));
+            document.getElementById('sekolah-search-nama').addEventListener('keyup', () => debounce(loadSekolah));
+            document.getElementById('sekolah-search-filter').addEventListener('change', () => loadSekolah());
 
             document.getElementById('previewModal').addEventListener('click', function(e) {
                 if (e.target === this) closePreviewModal();
             });
-
             document.getElementById('editModal').addEventListener('click', function(e) {
                 if (e.target === this) closeEditModal();
             });
         });
     </script>
+
 </body>
 </html>
+
