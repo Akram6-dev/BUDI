@@ -88,6 +88,17 @@ class TamuController extends Controller
         $filename = $directory . '/' . uniqid('', true) . '.' . $extension;
         Storage::disk('public')->put($filename, $image);
 
+        // Also save directly to public/storage if on shared hosting where public/storage is a real folder
+        try {
+            $publicDir = public_path('storage/' . $directory);
+            if (!is_dir($publicDir)) {
+                @mkdir($publicDir, 0755, true);
+            }
+            @file_put_contents(public_path('storage/' . $filename), $image);
+        } catch (\Throwable $e) {
+            // Ignore if permission denied
+        }
+
         return $filename;
     }
 }

@@ -1,0 +1,17 @@
+{
+  "name": "Buku Tamu Digital - SMKN 1 Subang",
+  "short_name": "Buku Tamu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#090a0f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/img/Gambar_SMKN_1SUBANG.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

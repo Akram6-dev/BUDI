@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="BUTAGI — Buku Tamu Digital SMKN 1 Subang. Sistem pencatatan tamu modern berbasis web.">
     <title>BUTAGI — Buku Tamu Digital SMKN 1 Subang</title>
+    <!-- Web App & Fullscreen / PWA meta tags -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Buku Tamu">
+    <meta name="theme-color" content="#090a0f">
     <!-- Anti-flash inline theme loader -->
     <script>
         (function() {
@@ -668,12 +675,20 @@
                     <span class="nav-school">SMKN 1 Subang</span>
                 </div>
             </a>
-            <!-- Theme toggle button -->
-            <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode">
-                <svg id="iconMoon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                <svg id="iconSun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <span id="themeLabel" class="nav-text">Dark</span>
-            </button>
+            <div class="nav-actions" style="display:flex; align-items:center; gap:clamp(0.35rem, 0.7vw, 0.6rem);">
+                <!-- Fullscreen toggle button -->
+                <button class="theme-btn" id="fsToggle" onclick="toggleFullscreen()" aria-label="Layar penuh" title="Layar penuh">
+                    <svg id="iconEnterFs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                    <svg id="iconExitFs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                    <span id="fsLabel" class="nav-text">Layar Penuh</span>
+                </button>
+                <!-- Theme toggle button -->
+                <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode" title="Ganti tema">
+                    <svg id="iconMoon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg id="iconSun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span id="themeLabel" class="nav-text">Dark</span>
+                </button>
+            </div>
         </header>
 
         <!-- ─── Hero ─── -->
@@ -682,7 +697,7 @@
 
                 <!-- Headline -->
                 <h1 class="hero-title title-gradient">
-                    Buku Tamu Digital
+                    BUKU TAMU DIGITAL
                 </h1>
 
                 <!-- Standalone CTA — NO card wrapper -->
@@ -724,6 +739,60 @@
     (function() {
         const saved = localStorage.getItem('butagi_theme') || 'light';
         applyTheme(saved);
+    })();
+
+    // ── Fullscreen toggle ──
+    function toggleFullscreen() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (!isFs) {
+            const el = document.documentElement;
+            localStorage.setItem('butagi_fullscreen', '1');
+            if (el.requestFullscreen) {
+                el.requestFullscreen().catch(err => console.warn('Fullscreen:', err));
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            }
+        } else {
+            localStorage.removeItem('butagi_fullscreen');
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(err => console.warn('Exit fullscreen:', err));
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
+
+    function updateFullscreenUi() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (isFs) {
+            localStorage.setItem('butagi_fullscreen', '1');
+        }
+        const iconEnter = document.getElementById('iconEnterFs');
+        const iconExit  = document.getElementById('iconExitFs');
+        const fsLabel   = document.getElementById('fsLabel');
+        if (iconEnter) iconEnter.style.display = isFs ? 'none' : 'block';
+        if (iconExit)  iconExit.style.display  = isFs ? 'block' : 'none';
+        if (fsLabel)   fsLabel.textContent    = isFs ? 'Kecilkan' : 'Layar Penuh';
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenUi);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenUi);
+
+    // Auto-resume fullscreen if user previously enabled fullscreen
+    (function initAutoFullscreen() {
+        if (localStorage.getItem('butagi_fullscreen') === '1') {
+            const tryFs = () => {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    const el = document.documentElement;
+                    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                }
+            };
+            tryFs();
+            ['pointerdown', 'touchend', 'click', 'focusin'].forEach(evt => {
+                window.addEventListener(evt, tryFs, { once: true });
+            });
+        }
     })();
 
     // ── Particle / star field canvas engine ──

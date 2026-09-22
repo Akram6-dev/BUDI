@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard Admin — BUTAGI SMKN 1 Subang</title>
+    <!-- Web App & Fullscreen / PWA meta tags -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#090a0f">
     <script>
         (function() {
             const saved = localStorage.getItem('butagi_theme') || 'dark';
@@ -842,6 +848,13 @@
         </a>
 
         <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <!-- Fullscreen Button -->
+            <button type="button" class="theme-btn" id="adminFsToggle" onclick="toggleAdminFullscreen()" aria-label="Layar Penuh" title="Layar Penuh">
+                <svg id="adminIconEnterFs" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                <svg id="adminIconExitFs" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                <span class="theme-btn-text" id="adminFsText">Layar Penuh</span>
+            </button>
+
             <!-- Theme Toggle Button -->
             <button type="button" class="theme-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Ganti Tema (Dark / Light)" title="Ganti Tema">
                 <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1335,14 +1348,25 @@
             else loadSekolah();
         });
 
+        function formatMediaUrl(path) {
+            if (!path) return '';
+            if (path.startsWith('data:image')) return path;
+            if (path.startsWith('http://') || path.startsWith('https://')) return path;
+            const clean = path.replace(/^\/?storage\//, '').replace(/^\//, '');
+            return '/storage/' + clean;
+        }
+
         // Modals
         function openPreview(id) {
             fetch(`/api/data/${id}`)
                 .then(r => r.json())
                 .then(data => {
-                    const fotoHTML = data.foto ? `
+                    const fotoUrl = formatMediaUrl(data.foto);
+                    const ttdUrl  = formatMediaUrl(data.tanda_tangan);
+
+                    const fotoHTML = fotoUrl ? `
                         <div class="preview-img-container">
-                            <img src="/storage/${data.foto}" alt="Foto">
+                            <img src="${fotoUrl}" alt="Foto Pengunjung" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:0.8125rem;padding:0.75rem;text-align:center;\'>File foto tidak ditemukan di storage server</div>';">
                         </div>
                     ` : `
                         <div class="preview-img-container" style="background:#f1f5f9; color:#94a3b8; font-size:0.8125rem;">
@@ -1350,9 +1374,9 @@
                         </div>
                     `;
 
-                    const ttdHTML = data.tanda_tangan ? `
+                    const ttdHTML = ttdUrl ? `
                         <div class="preview-sig-container">
-                            <img src="/storage/${data.tanda_tangan}" alt="Tanda Tangan">
+                            <img src="${ttdUrl}" alt="Tanda Tangan" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:0.8125rem;padding:0.75rem;text-align:center;\'>File tanda tangan tidak ditemukan di storage server</div>';">
                         </div>
                     ` : `
                         <div class="preview-sig-container" style="background:#f8fafc; color:#94a3b8; font-size:0.8125rem;">
@@ -1532,6 +1556,38 @@
             const cur = document.documentElement.getAttribute('data-theme') || 'dark';
             applyTheme(cur === 'dark' ? 'light' : 'dark');
         }
+
+        // Fullscreen Toggle
+        function toggleAdminFullscreen() {
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (!isFs) {
+                const el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen().catch(() => {});
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        function updateAdminFsUI() {
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const iconEnter = document.getElementById('adminIconEnterFs');
+            const iconExit  = document.getElementById('adminIconExitFs');
+            const txt       = document.getElementById('adminFsText');
+            if (iconEnter) iconEnter.style.display = isFs ? 'none' : 'block';
+            if (iconExit)  iconExit.style.display  = isFs ? 'block' : 'none';
+            if (txt)       txt.textContent        = isFs ? 'Kecilkan' : 'Layar Penuh';
+        }
+
+        document.addEventListener('fullscreenchange', updateAdminFsUI);
+        document.addEventListener('webkitfullscreenchange', updateAdminFsUI);
 
         // Init & Search Debounce
         document.addEventListener('DOMContentLoaded', function() {

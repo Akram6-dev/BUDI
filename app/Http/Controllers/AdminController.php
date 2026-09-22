@@ -220,7 +220,8 @@ class AdminController extends Controller
             return redirect('/login');
         }
 
-        @set_time_limit(120);
+        @set_time_limit(180);
+        @ini_set('memory_limit', '256M');
 
         $section = $request->get('section', 'instansi');
         $isSchool = in_array($section, ['sekolah', 'student', 'school']);
@@ -287,7 +288,11 @@ class AdminController extends Controller
             'sectionLabel' => $sectionLabel,
             'rows' => $rows,
             'generatedAt' => now(),
-        ])->setPaper('a4', 'landscape');
+            'blankPng' => self::BLANK_PNG_DATA_URI,
+        ])
+        ->setPaper('a4', 'landscape')
+        ->setOption('isHtml5ParserEnabled', true)
+        ->setOption('isRemoteEnabled', true);
 
         $filename = $isSchool ? 'daftar-kehadiran-sekolah.pdf' : 'daftar-kehadiran-instansi.pdf';
 
@@ -300,13 +305,39 @@ class AdminController extends Controller
             return self::BLANK_PNG_DATA_URI;
         }
 
-        $basePath = realpath(storage_path('app/public'));
-        $fullPath = realpath(storage_path('app/public/' . ltrim($relativePath, '/\\')));
+        // Clean any leading slash or redundant 'public/' / 'storage/' prefix
+        $cleanPath = ltrim($relativePath, '/\\');
+        $cleanPath = preg_replace('#^(public/|storage/)+#i', '', $cleanPath);
 
-        if (!$basePath || !$fullPath || !str_starts_with($fullPath, $basePath) || !is_file($fullPath)) {
+        // Candidate paths for both local and shared hosting (with or without storage symlink)
+        $candidates = [
+            storage_path('app/public/' . $cleanPath),
+            public_path('storage/' . $cleanPath),
+            public_path($cleanPath),
+            base_path('storage/app/public/' . $cleanPath),
+            base_path('public/storage/' . $cleanPath),
+            base_path('public_html/storage/' . $cleanPath),
+            base_path('public_html/' . $cleanPath),
+        ];
+
+        if (!empty($_SERVER['DOCUMENT_ROOT'])) {
+            $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/storage/' . $cleanPath;
+            $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/' . $cleanPath;
+        }
+
+        $fullPath = null;
+        foreach ($candidates as $candidate) {
+            if ($candidate && @is_file($candidate)) {
+                $fullPath = $candidate;
+                break;
+            }
+        }
+
+        if (!$fullPath) {
             return self::BLANK_PNG_DATA_URI;
         }
 
+        // 1. Try GD optimization for high quality & tiny PDF size
         if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
             $optimized = $this->optimizedImageDataUri($fullPath, $maxWidth, $maxHeight, $quality);
             if ($optimized !== null) {
@@ -314,11 +345,12 @@ class AdminController extends Controller
             }
         }
 
-        if (filesize($fullPath) > 120 * 1024) {
-            return self::BLANK_PNG_DATA_URI;
+        // 2. Fallback: Raw image data URI (supports up to 4MB)
+        if (@filesize($fullPath) <= 4 * 1024 * 1024) {
+            return $this->rawImageDataUri($fullPath);
         }
 
-        return $this->rawImageDataUri($fullPath);
+        return self::BLANK_PNG_DATA_URI;
     }
 
     private function optimizedImageDataUri(string $fullPath, int $maxWidth, int $maxHeight, int $quality): ?string

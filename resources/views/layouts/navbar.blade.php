@@ -13,6 +13,11 @@
     </a>
 
     <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button type="button" class="theme-btn" id="mrcFsToggle" onclick="toggleMrcFullscreen()" aria-label="Layar penuh" title="Layar penuh" style="padding: 0.45rem 0.8rem; font-size: 0.8125rem;">
+            <svg id="mrcIconEnterFs" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <svg id="mrcIconExitFs" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+            <span id="mrcFsLabel">Layar Penuh</span>
+        </button>
         <button type="button" class="theme-btn" id="mrcThemeToggle" onclick="toggleMrcTheme()" aria-label="Ganti tema" style="padding: 0.45rem 0.8rem; font-size: 0.8125rem;">
             <svg id="mrcIconMoon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
@@ -53,4 +58,35 @@
         document.documentElement.setAttribute('data-theme', saved);
         updateMrcThemeUI(saved);
     })();
+
+    function toggleMrcFullscreen() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (!isFs) {
+            const el = document.documentElement;
+            if (el.requestFullscreen) {
+                el.requestFullscreen().catch(() => {});
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
+
+    function updateMrcFsUI() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        const iconEnter = document.getElementById('mrcIconEnterFs');
+        const iconExit  = document.getElementById('mrcIconExitFs');
+        const fsLabel   = document.getElementById('mrcFsLabel');
+        if (iconEnter) iconEnter.style.display = isFs ? 'none' : 'block';
+        if (iconExit)  iconExit.style.display  = isFs ? 'block' : 'none';
+        if (fsLabel)   fsLabel.textContent    = isFs ? 'Kecilkan' : 'Layar Penuh';
+    }
+
+    document.addEventListener('fullscreenchange', updateMrcFsUI);
+    document.addEventListener('webkitfullscreenchange', updateMrcFsUI);
 </script>

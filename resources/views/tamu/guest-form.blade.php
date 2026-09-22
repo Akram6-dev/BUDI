@@ -6,6 +6,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Formulir Kehadiran Tamu - BUTAGI SMKN 1 Subang">
     <title>Formulir Kehadiran — BUTAGI</title>
+    <!-- Web App & Fullscreen / PWA meta tags -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Buku Tamu">
+    <meta name="theme-color" content="#090a0f">
     <!-- Anti-flash inline theme loader -->
     <script>
         (function() {
@@ -141,7 +148,7 @@
         [data-theme="light"] .field-lbl { 
             color: #0f172a; 
             font-weight: 600; 
-            font-size: clamp(0.82rem, 1.05vh, 0.92rem);
+            font-size: 0.98rem;
             letter-spacing: -0.01em;
         }
         [data-theme="light"] .field-lbl svg { color: #475569; }
@@ -182,9 +189,12 @@
             box-shadow: 0 6px 16px -4px rgba(9, 10, 15, 0.08);
         }
         [data-theme="light"] #btnInstansi .sbt-icon,
-        [data-theme="light"] #btnSekolah .sbt-icon {
+        [data-theme="light"] #btnSekolah .sbt-icon,
+        [data-theme="light"] #btnPhoto .sbt-icon,
+        [data-theme="light"] #btnSig .sbt-icon {
             background: #f1f5f9;
             border: 1px solid #e2e8f0;
+            color: #090a0f;
         }
         [data-theme="light"] .status-btn:hover .sbt-icon {
             background: #e2e8f0;
@@ -216,29 +226,34 @@
             border-color: #cbd5e1;
         }
 
-        [data-theme="light"] .trigger-btn {
+        /* Light mode card styling for Photo and Signature */
+        [data-theme="light"] .media-card-btn {
             background: #ffffff;
-            border: 1.5px dashed #cbd5e1;
-            color: #475569;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
-        }
-        [data-theme="light"] .trigger-btn:hover {
-            background: #ffffff;
-            border-style: solid;
-            border-color: #090a0f;
+            border: 1.5px solid #cbd5e1;
             color: #090a0f;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
-        [data-theme="light"] .trigger-lbl { color: #475569; }
-        [data-theme="light"] .trigger-icon { color: #64748b; }
-        [data-theme="light"] .trigger-btn:hover .trigger-icon { color: #090a0f; }
+        [data-theme="light"] .media-card-btn:hover {
+            background: #ffffff;
+            border-color: #090a0f;
+            box-shadow: 0 6px 16px -4px rgba(9, 10, 15, 0.08);
+        }
+        [data-theme="light"] .media-card-btn.has-value,
         [data-theme="light"] .trigger-btn.has-value {
-            background: #ffffff;
-            border-style: solid;
-            border-color: #090a0f;
-            color: #090a0f;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: #f0fdf4 !important;
+            border-style: solid !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12) !important;
+        }
+        [data-theme="light"] .media-card-btn.has-value .sbt-icon,
+        [data-theme="light"] .trigger-btn.has-value .sbt-icon {
+            background: #dcfce7 !important;
+            border-color: #86efac !important;
+            color: #059669 !important;
+        }
+        [data-theme="light"] .media-badge {
+            background: #059669;
+            color: #ffffff;
         }
 
         /* Rating section in light mode */
@@ -395,10 +410,11 @@
         }
 
         html, body {
-            min-height: 100dvh;
+            height: 100dvh;
+            max-height: 100dvh;
             width: 100%;
             max-width: 100vw;
-            overflow-x: hidden;
+            overflow: hidden;
             font-family: var(--font);
             background-color: var(--bg);
             color: var(--text);
@@ -433,15 +449,16 @@
             background:radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 65%); }
 
         /* ═══════════════════════════════════════════
-           ROOT WRAPPER — min-height: 100dvh flex column
+           ROOT WRAPPER — 100dvh flex column (No-Scroll Kiosk)
         ═══════════════════════════════════════════ */
         .root {
             position: relative;
             z-index: 1;
-            min-height: 100dvh;
+            height: 100dvh;
+            max-height: 100dvh;
             width: 100%;
             max-width: 100vw;
-            overflow-x: hidden;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -542,20 +559,137 @@
         .nav-home:hover, .theme-btn:hover { color: var(--text); border-color: var(--border-f); background: rgba(49,46,129,0.3); }
 
         /* ═══════════════════════════════════════════
-           MAIN STAGE — center the card
+           KIOSK HERO / WELCOME VIEW (No-Reload SPA)
         ═══════════════════════════════════════════ */
-        .stage {
-            flex: 1 0 auto;
+        .hero {
+            position: relative;
+            z-index: 1;
+            flex: 1 1 0;
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(0.6rem, 1.8vh, 1.5rem) clamp(0.75rem, 2vw, 2rem);
+            flex-direction: column;
+            gap: 0;
+            width: 100%;
+            padding: clamp(0.5rem, 2vh, 1.5rem) 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .hero-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: clamp(1rem, 2.5vh, 2.2rem);
+            padding: 0 clamp(1rem, 3vw, 3rem);
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, min(6.5vw, 8vh), 4.8rem);
+            font-weight: 900;
+            letter-spacing: -0.045em;
+            line-height: 1.15;
+            padding-bottom: 0.1em;
+            max-width: min(94vw, 1100px);
+            animation: fadeDown 0.6s ease both;
+        }
+
+        .title-gradient {
+            background: linear-gradient(145deg, #ffffff 0%, #c7d2fe 45%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            padding-bottom: 0.12em;
+        }
+
+        [data-theme="light"] .title-gradient {
+            background: linear-gradient(145deg, #090a0f 0%, #1e293b 60%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.5rem, 0.8vw, 0.9rem);
+            min-height: 48px;
+            padding: clamp(0.75rem, 1.6vh, 1.35rem) clamp(1.75rem, 3vw, 3.75rem);
+            font-size: clamp(0.95rem, min(1.2vw, 2vh), 1.35rem);
+            font-weight: 700;
+            font-family: var(--font);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: var(--radius-pill);
+            background: var(--accent-g);
+            border: 1px solid rgba(165,180,252,0.25);
+            box-sizing: border-box;
+            box-shadow:
+                0 0 0 1px rgba(79,70,229,0.35) inset,
+                0 12px 32px -4px rgba(79,70,229,0.55),
+                0 0 24px rgba(139,92,246,0.35);
+            cursor: pointer;
+            transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeUp 0.6s 0.15s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+        [data-theme="light"] .cta-btn {
+            background: #090a0f;
+            color: #ffffff;
+            border: 1px solid #18181b;
+            box-shadow: 0 10px 25px -5px rgba(9, 10, 15, 0.22), 0 2px 6px rgba(9, 10, 15, 0.08);
+        }
+        [data-theme="light"] .cta-btn:hover {
+            background: #000000;
+            transform: translateY(-3px) scale(1.025);
+            box-shadow: 0 16px 36px -6px rgba(9, 10, 15, 0.35), 0 4px 12px rgba(9, 10, 15, 0.12);
+        }
+        .cta-btn:hover { 
+            transform: translateY(-3px) scale(1.025);
+            box-shadow:
+                0 0 0 1px rgba(165,180,252,0.4) inset,
+                0 18px 42px -4px rgba(79,70,229,0.7),
+                0 0 36px rgba(139,92,246,0.5);
+        }
+        .cta-btn:active { transform: translateY(0) scale(0.985); }
+
+        .cta-icon {
+            width: clamp(18px, 1.4vw, 26px);
+            height: clamp(18px, 1.4vw, 26px);
+            transition: transform 0.25s;
+        }
+        .cta-btn:hover .cta-icon { transform: translateX(3px); }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════
+           MAIN STAGE — center the card
+        ═══════════════════════════════════════════ */
+        .stage {
+            flex: 1 1 0;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(0.35rem, 1vh, 0.75rem) clamp(0.75rem, 2vw, 1.5rem);
             position: relative;
             z-index: 1;
-            min-height: 0;
             width: 100%;
             max-width: 100vw;
             overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
         }
         .stage::-webkit-scrollbar {
             width: 5px;
@@ -583,7 +717,7 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            gap: clamp(1.1rem, 2.5vh, 1.85rem);
+            gap: clamp(0.45rem, 1.3vh, 0.95rem);
             margin: auto 0;
             box-sizing: border-box;
         }
@@ -625,18 +759,28 @@
         .field-lbl {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
-            font-size: clamp(1.2rem, 1.9vh, 1.45rem);
-            font-weight: 700;
+            gap: 0.45rem;
+            font-size: 0.98rem;
+            font-weight: 600;
             letter-spacing: -0.01em;
             color: var(--text);
             line-height: 1.3;
         }
+        .field-lbl .lbl-emoji {
+            font-size: 1.05em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .field-lbl .lbl-text {
+            line-height: 1.2;
+        }
         .field-lbl svg {
             color: var(--indigo-l);
             flex-shrink: 0;
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
         }
         .field-wrap { position: relative; }
         .field-icon {
@@ -721,6 +865,16 @@
             border: 1px solid rgba(192, 132, 252, 0.3);
             color: #c084fc;
         }
+        #btnPhoto .sbt-icon {
+            background: rgba(56, 189, 248, 0.22);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #38bdf8;
+        }
+        #btnSig .sbt-icon {
+            background: rgba(168, 85, 247, 0.22);
+            border: 1px solid rgba(192, 132, 252, 0.35);
+            color: #c084fc;
+        }
         .sbt-svg {
             width: clamp(14px, 1.8vh, 18px);
             height: clamp(14px, 1.8vh, 18px);
@@ -787,66 +941,87 @@
         }
 
         /* ═══════════════════════════════════════════
-           PHOTO & SIGNATURE TRIGGER BUTTONS (2-col grid)
+           PHOTO & SIGNATURE BUTTONS (Matches status-btn card style)
         ═══════════════════════════════════════════ */
         .media-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: clamp(0.55rem, 1.2vh, 0.85rem);
             width: 100%;
         }
 
-        .trigger-btn {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: clamp(0.28rem, 0.55vh, 0.42rem);
-            padding: clamp(0.58rem, 1.2vh, 0.82rem) clamp(0.65rem, 1vw, 0.85rem);
-            background: rgba(15,23,42,0.65);
-            border: 1.5px dashed var(--border-b);
-            border-radius: clamp(0.45rem, 0.8vh, 0.65rem);
-            cursor: pointer; color: var(--text-m);
-            font-family: var(--font);
-            font-size: clamp(0.66rem, 0.84vh, 0.74rem);
-            font-weight: 600;
-            transition: all 0.2s;
+        .media-card-btn {
             position: relative;
-            overflow: hidden;
-            min-height: clamp(52px, 7vh, 66px);
-            box-sizing: border-box;
+            width: 100%;
         }
-        .trigger-btn:hover {
-            border-style: solid;
-            border-color: var(--border-f);
-            background: rgba(49,46,129,0.25);
-            color: var(--text);
+
+        .media-btn-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
         }
-        .trigger-btn.has-value {
-            border-style: solid;
-            border-color: rgba(16,185,129,0.5);
+
+        .media-card-btn.has-value {
+            border-color: rgba(16,185,129,0.55);
             background: rgba(16,185,129,0.08);
         }
-        .trigger-btn.has-value .trigger-icon { color: var(--emerald); }
-        .trigger-btn.has-value .trigger-lbl  { color: var(--text); }
+        .media-card-btn.has-value .sbt-icon {
+            background: rgba(16,185,129,0.22);
+            border-color: rgba(16,185,129,0.45);
+            color: var(--emerald);
+        }
+        .media-card-btn.has-value .sbt-name {
+            color: var(--text);
+        }
 
+        .media-thumb-img {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+        }
+
+        .media-badge {
+            display: none;
+            position: absolute;
+            top: clamp(6px, 1vh, 8px);
+            right: clamp(8px, 1.1vw, 10px);
+            font-size: clamp(0.54rem, 0.74vh, 0.64rem);
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--emerald);
+            padding: 0.12rem 0.45rem;
+            border-radius: var(--radius-p);
+            letter-spacing: 0.02em;
+        }
+        .media-card-btn.has-value .media-badge {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Fallback aliases for legacy trigger-btn */
+        .trigger-btn {
+            position: relative;
+        }
         .trigger-thumb {
             display: none;
-            width: clamp(28px, 3.6vh, 38px);
-            height: clamp(28px, 3.6vh, 38px);
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 0.45rem;
-            border: 2px solid rgba(16,185,129,0.5);
+            border-radius: inherit;
         }
-        .trigger-icon { color: var(--indigo-l); }
-        .trigger-icon svg {
-            width: clamp(16px, 2vh, 20px);
-            height: clamp(16px, 2vh, 20px);
-        }
-        .trigger-lbl  { color: var(--text-m); text-align: center; }
         .trigger-badge {
             display: none;
-            position: absolute; top: 4px; right: 6px;
-            font-size: clamp(0.5rem, 0.7vh, 0.6rem);
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 0.6rem;
             font-weight: 700;
-            color: #fff; background: var(--emerald);
-            padding: 0.08rem 0.35rem; border-radius: var(--radius-p);
+            color: #fff;
+            background: var(--emerald);
+            padding: 0.1rem 0.4rem;
+            border-radius: var(--radius-p);
         }
         .trigger-btn.has-value .trigger-badge { display: block; }
 
@@ -1030,6 +1205,10 @@
             display:flex; align-items:center; justify-content:center;
             color:var(--indigo-l);
         }
+        .modal-head-actions {
+            display: flex; align-items: center; gap: 0.45rem;
+        }
+        .modal-action-btn,
         .modal-close {
             width: 44px; height: 44px; min-width: 44px; min-height: 44px;
             border-radius: 50%; border: 1px solid rgba(255,255,255,0.08);
@@ -1039,6 +1218,7 @@
             transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
             box-sizing: border-box;
         }
+        .modal-action-btn:hover,
         .modal-close:hover {
             color:#ffffff;
             background:rgba(255,255,255,0.12);
@@ -1079,6 +1259,7 @@
             object-fit:cover;
             display:none;
         }
+
 
         /* ═══════════════════════════════════════════
            CAMERA 3S COUNTDOWN OVERLAY
@@ -1346,101 +1527,123 @@
             }
             .nav-home, .theme-btn {
                 padding: 0 0.5rem;
-                min-height: 44px;
-                min-width: 44px;
+                min-height: 36px;
+                min-width: 36px;
                 justify-content: center;
             }
             .stage {
-                padding: 0.6rem 0.75rem 1rem;
+                padding: clamp(0.25rem, 0.8vh, 0.5rem) clamp(0.5rem, 2vw, 0.85rem);
             }
             .glass-card {
                 max-width: 100%;
                 margin: 0;
-                gap: 1.15rem;
+                gap: clamp(0.35rem, 1vh, 0.65rem);
             }
             .card-title {
-                font-size: clamp(1.4rem, 6.2vw, 1.75rem);
+                font-size: clamp(1.3rem, 5.5vw, 1.6rem);
+                line-height: 1.15;
             }
             .card-sub {
-                font-size: 0.85rem;
+                font-size: 0.78rem;
+                margin-top: 0.15rem;
+                line-height: 1.25;
+            }
+            .form-stack {
+                gap: clamp(0.3rem, 0.9vh, 0.55rem);
+            }
+            .field {
+                gap: 0.15rem;
             }
             .field-lbl {
-                font-size: 1.08rem;
-                font-weight: 700;
+                font-size: 0.84rem;
+                font-weight: 600;
+                gap: 0.3rem;
             }
             .field-lbl svg {
-                width: 18px;
-                height: 18px;
+                width: 15px;
+                height: 15px;
             }
             .field-input {
-                padding: 0.55rem 0.9rem;
-                font-size: 0.95rem;
-                min-height: 44px;
+                padding: 0.35rem 0.8rem;
+                font-size: 0.85rem;
+                min-height: clamp(36px, 4.5vh, 42px);
                 border-radius: 0.5rem;
             }
             .field-input::placeholder {
-                font-size: 0.95rem;
+                font-size: 0.85rem;
                 opacity: 0.9;
             }
             .field-icon {
-                width: 15px;
-                height: 15px;
-                left: 0.85rem;
+                width: 14px;
+                height: 14px;
+                left: 0.75rem;
             }
             .field-wrap .field-icon + .field-input,
             #inputInstansi,
             #inputSekolah {
-                padding-left: 2.8rem !important;
+                padding-left: 2.6rem !important;
             }
             .status-big-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 0.5rem;
+                gap: 0.4rem;
             }
             .status-btn {
-                padding: 0.6rem 0.75rem;
-                min-height: 56px;
+                padding: 0.35rem 0.6rem;
+                min-height: clamp(42px, 5.2vh, 48px);
                 border-radius: 0.5rem;
+                gap: 0.25rem;
+            }
+            .sbt-icon {
+                width: 24px;
+                height: 24px;
             }
             .sbt-name {
-                font-size: 0.92rem;
+                font-size: 0.84rem;
+                line-height: 1.2;
             }
             .sbt-desc {
-                font-size: 0.75rem;
+                font-size: 0.68rem;
+                line-height: 1.15;
             }
             .media-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 0.5rem;
+                gap: 0.4rem;
             }
-            .trigger-btn {
-                padding: 0.65rem 0.75rem;
-                min-height: 58px;
+            .media-card-btn, .trigger-btn {
+                padding: 0.35rem 0.6rem;
+                min-height: clamp(42px, 5.2vh, 48px);
                 border-radius: 0.5rem;
+                gap: 0.25rem;
             }
             .trigger-lbl {
-                font-size: 0.85rem;
+                font-size: 0.84rem;
             }
             .rating-section {
-                gap: 0.45rem;
+                gap: 0.25rem;
             }
             .rating-q {
-                font-size: 0.88rem;
+                font-size: 0.82rem;
             }
             .rating-bar {
                 border-radius: 0.5rem;
+                padding: 0.2rem;
+                gap: 0.35rem;
             }
             .rating-opt {
-                min-height: 42px;
-                padding: 0.35rem 0.45rem;
+                min-height: clamp(32px, 4vh, 38px);
+                padding: 0.2rem 0.4rem;
                 font-size: 0.68rem;
+                gap: 0.25rem;
             }
             .rating-opt .r-emoji {
-                font-size: 1.15rem;
+                font-size: 1.1rem;
             }
             .btn-submit {
-                font-size: 0.92rem;
-                min-height: 44px;
+                font-size: 0.88rem;
+                min-height: clamp(38px, 4.6vh, 44px);
                 border-radius: 0.55rem;
-                padding: 0.65rem 1.5rem;
+                padding: 0.45rem 1.2rem;
+                margin-top: 0.15rem;
             }
             .footer {
                 padding: 0.35rem 0.8rem;
@@ -1503,17 +1706,27 @@
             .glass-card {
                 max-width: 580px;
             }
+            .card-title {
+                font-size: clamp(2.2rem, 4.8vw, 2.65rem);
+                font-weight: 900;
+                letter-spacing: -0.025em;
+                line-height: 1.12;
+            }
+            .card-sub {
+                font-size: 1.05rem;
+                margin-top: 0.85rem;
+            }
             .navbar {
                 padding: 0 1.5rem;
             }
             .field-lbl {
-                font-size: 1.32rem;
-                font-weight: 700;
-                gap: 0.6rem;
+                font-size: 1.02rem;
+                font-weight: 600;
+                gap: 0.45rem;
             }
             .field-lbl svg {
-                width: 24px;
-                height: 24px;
+                width: 18px;
+                height: 18px;
             }
             .rating-q {
                 font-size: 1.25rem;
@@ -1532,34 +1745,145 @@
         /* ─── Tablets (iPad Mini / Standard: 768px - 899px) ─── */
         @media (min-width: 768px) and (max-width: 899px) {
             .navbar {
-                padding: 0 1.75rem;
+                padding: 0 1.5rem;
             }
             .nav-logos { gap: 0.5rem; }
-            .nav-logo-img { height: 34px; }
+            .nav-logo-img { height: 32px; }
+            .nav-logo-divider { height: 18px; }
+            .nav-name { font-size: 1.15rem; }
+            .nav-school { font-size: 0.78rem; }
+            .nav-text { display: inline !important; }
+            .theme-btn, .nav-home { padding: 0.4rem 0.95rem; min-height: 40px; font-size: 0.82rem; }
+            .stage { padding: clamp(0.35rem, 1vh, 0.75rem) 1.5rem; }
+            .glass-card {
+                max-width: 640px;
+                gap: clamp(0.45rem, 1.2vh, 0.85rem);
+            }
+            .card-header {
+                padding-bottom: 0.15rem;
+            }
+            .card-title {
+                font-size: clamp(1.65rem, 3.5vw, 2.15rem);
+                font-weight: 800;
+                letter-spacing: -0.025em;
+                line-height: 1.15;
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+            .card-sub {
+                font-size: 0.92rem;
+                margin-top: clamp(0.2rem, 0.5vh, 0.4rem);
+                line-height: 1.35;
+            }
+            .form-stack { gap: clamp(0.4rem, 1.1vh, 0.75rem); }
+            .field { gap: clamp(0.18rem, 0.4vh, 0.3rem); }
+            .field-lbl { font-size: 0.96rem; font-weight: 600; gap: 0.4rem; }
+            .field-lbl svg { width: 17px; height: 17px; }
+            .field-input {
+                padding: clamp(0.4rem, 0.75vh, 0.6rem) 1rem;
+                font-size: 0.96rem;
+                min-height: clamp(40px, 4.8vh, 48px);
+                border-radius: 0.6rem;
+            }
+            .field-input::placeholder {
+                font-size: 0.96rem;
+                opacity: 0.9;
+            }
+            .field-icon {
+                width: 17px;
+                height: 17px;
+                left: 1rem;
+            }
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 3rem !important;
+            }
+            .status-big-grid { grid-template-columns: 1fr 1fr; gap: clamp(0.45rem, 1vh, 0.8rem); }
+            .status-btn, .media-card-btn, .trigger-btn { padding: clamp(0.45rem, 0.85vh, 0.7rem) clamp(0.7rem, 1vw, 1rem); min-height: clamp(48px, 5.8vh, 60px); gap: 0.45rem; border-radius: 0.65rem; }
+            .sbt-icon { width: clamp(28px, 3.6vh, 36px); height: clamp(28px, 3.6vh, 36px); }
+            .sbt-svg { width: 20px; height: 20px; }
+            .sbt-name { font-size: 0.96rem; }
+            .sbt-desc { font-size: 0.78rem; }
+            .status-pill { padding: 0.45rem 1rem; font-size: 0.95rem; min-height: clamp(34px, 4.4vh, 42px); }
+            .status-pill-change { font-size: 0.82rem; padding: 0.25rem 0.65rem; }
+            .media-grid { grid-template-columns: 1fr 1fr; gap: clamp(0.45rem, 1vh, 0.8rem); }
+            .rating-section { gap: clamp(0.25rem, 0.5vh, 0.4rem); }
+            .rating-q { font-size: 1.05rem; font-weight: 700; }
+            .rating-bar { gap: 0.5rem; border-radius: 0.65rem; padding: 0.25rem; }
+            .rating-opt { padding: clamp(0.25rem, 0.5vh, 0.45rem) 0.65rem; min-height: clamp(38px, 4.6vh, 48px); gap: 0.35rem; }
+            .rating-opt .r-emoji { font-size: 1.35rem; }
+            .rating-opt span:last-child { font-size: 0.85rem; font-weight: 700; }
+            .btn-submit { min-height: clamp(40px, 5vh, 48px); padding: clamp(0.45rem, 0.9vh, 0.7rem) 1.8rem; font-size: 1rem; border-radius: 0.65rem; }
+            #submitIcon { width: 19px; height: 19px; }
+            .modal-win { max-width: 600px; }
+            .footer span { font-size: 0.8rem; }
+        }
+
+        /* ─── Large & Pro Tablets (iPad Pro 1032x1376, Surface Pro 960x1440: tall portrait tablets ONLY) ─── */
+        @media (min-width: 900px) and (max-width: 1200px) and (orientation: portrait), (min-width: 900px) and (min-height: 951px) and (max-width: 1300px) {
+            .navbar {
+                padding: 0 clamp(1.5rem, 3vw, 2.5rem);
+            }
+            .nav-logos { gap: 0.6rem; }
+            .nav-logo-img { height: 36px; }
             .nav-logo-divider { height: 20px; }
             .nav-name { font-size: 1.25rem; }
             .nav-school { font-size: 0.82rem; }
             .nav-text { display: inline !important; }
-            .theme-btn, .nav-home { padding: 0.5rem 1.1rem; min-height: 44px; font-size: 0.88rem; }
-            .stage { padding: 1.75rem 2rem; }
-            .glass-card {
-                max-width: 700px;
-                gap: 1.4rem;
+            .theme-btn, .nav-home {
+                padding: 0.45rem 1.1rem;
+                min-height: 42px;
+                font-size: 0.88rem;
             }
-            .card-title { font-size: 2.2rem; }
-            .card-sub { font-size: 1.02rem; margin-top: 0.45rem; }
-            .form-stack { gap: 1.3rem; }
-            .field { gap: 0.55rem; }
-            .field-lbl { font-size: 1.45rem; font-weight: 700; gap: 0.65rem; }
-            .field-lbl svg { width: 26px; height: 26px; }
+            .stage {
+                padding: clamp(0.45rem, 1.2vh, 1rem) 2rem;
+            }
+            .glass-card {
+                max-width: 680px;
+                gap: clamp(0.55rem, 1.4vh, 1rem);
+            }
+            .card-header {
+                padding-bottom: 0.2rem;
+            }
+            .card-title {
+                font-size: clamp(1.85rem, 4vw, 2.45rem);
+                font-weight: 800;
+                letter-spacing: -0.025em;
+                line-height: 1.15;
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+            .card-sub {
+                font-size: 1rem;
+                margin-top: clamp(0.25rem, 0.6vh, 0.45rem);
+                line-height: 1.4;
+            }
+            .form-stack {
+                gap: clamp(0.45rem, 1.2vh, 0.85rem);
+            }
+            .field {
+                gap: clamp(0.2rem, 0.5vh, 0.35rem);
+            }
+            .field-lbl {
+                font-size: 1rem;
+                font-weight: 600;
+                gap: 0.45rem;
+            }
+            .field-lbl svg {
+                width: 18px;
+                height: 18px;
+            }
             .field-input {
-                padding: 0.72rem 1.2rem;
-                font-size: 1.05rem;
-                min-height: 52px;
+                padding: clamp(0.45rem, 0.85vh, 0.65rem) 1.1rem;
+                font-size: 1rem;
+                min-height: clamp(42px, 5vh, 50px);
                 border-radius: 0.65rem;
             }
             .field-input::placeholder {
-                font-size: 1.05rem;
+                font-size: 1rem;
                 opacity: 0.9;
             }
             .field-icon {
@@ -1570,186 +1894,93 @@
             .field-wrap .field-icon + .field-input,
             #inputInstansi,
             #inputSekolah {
-                padding-left: 3.15rem !important;
-            }
-            .status-big-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .status-btn { padding: 0.9rem 1.25rem; min-height: 72px; gap: 0.6rem; border-radius: 0.75rem; }
-            .sbt-icon { width: 42px; height: 42px; }
-            .sbt-svg { width: 24px; height: 24px; }
-            .sbt-name { font-size: 1.08rem; }
-            .sbt-desc { font-size: 0.88rem; }
-            .status-pill { padding: 0.75rem 1.35rem; font-size: 1.1rem; }
-            .status-pill-change { font-size: 0.9rem; padding: 0.35rem 0.85rem; }
-            .media-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .trigger-btn { padding: 0.95rem 1.25rem; min-height: 80px; gap: 0.65rem; border-radius: 0.75rem; }
-            .trigger-icon svg { width: 26px; height: 26px; }
-            .trigger-lbl { font-size: 1.1rem; font-weight: 700; }
-            .rating-section { gap: 0.9rem; }
-            .rating-q { font-size: 1.38rem; font-weight: 700; }
-            .rating-bar { gap: 0.75rem; border-radius: 0.8rem; }
-            .rating-opt { padding: 0.75rem 1rem; min-height: 64px; gap: 0.4rem; }
-            .rating-opt .r-emoji { font-size: 1.6rem; }
-            .rating-opt span:last-child { font-size: 0.98rem; font-weight: 700; }
-            .btn-submit { min-height: 52px; padding: 0.9rem 2.2rem; font-size: 1.08rem; border-radius: 0.75rem; }
-            #submitIcon { width: 22px; height: 22px; }
-            .modal-win { max-width: 640px; }
-            .footer span { font-size: 0.85rem; }
-        }
-
-        /* ─── Large & Pro Tablets (iPad Pro 1032x1376, Surface Pro 960x1440: tall portrait tablets ONLY) ─── */
-        @media (min-width: 900px) and (max-width: 1200px) and (orientation: portrait), (min-width: 900px) and (min-height: 951px) and (max-width: 1300px) {
-            .navbar {
-                padding: 0 clamp(2rem, 3.5vw, 3.5rem);
-            }
-            .nav-logos { gap: 0.65rem; }
-            .nav-logo-img { height: 40px; }
-            .nav-logo-divider { height: 24px; }
-            .nav-name { font-size: 1.35rem; }
-            .nav-school { font-size: 0.9rem; }
-            .nav-text { display: inline !important; }
-            .theme-btn, .nav-home {
-                padding: 0.55rem 1.3rem;
-                min-height: 46px;
-                font-size: 0.95rem;
-            }
-            .stage {
-                padding: clamp(2rem, 3.5vh, 3.5rem) 2.5rem;
-            }
-            .glass-card {
-                max-width: 780px;
-                gap: 1.55rem;
-            }
-            .card-title {
-                font-size: 2.35rem;
-            }
-            .card-sub {
-                font-size: 1.08rem;
-                margin-top: 0.45rem;
-            }
-            .form-stack {
-                gap: 1.35rem;
-            }
-            .field {
-                gap: 0.55rem;
-            }
-            .field-lbl {
-                font-size: 1.55rem;
-                font-weight: 700;
-                gap: 0.75rem;
-            }
-            .field-lbl svg {
-                width: 28px;
-                height: 28px;
-            }
-            .field-input {
-                padding: 0.75rem 1.3rem;
-                font-size: 1.08rem;
-                min-height: 54px;
-                border-radius: 0.7rem;
-            }
-            .field-input::placeholder {
-                font-size: 1.08rem;
-                opacity: 0.9;
-            }
-            .field-icon {
-                width: 19px;
-                height: 19px;
-                left: 1.1rem;
-            }
-            .field-wrap .field-icon + .field-input,
-            #inputInstansi,
-            #inputSekolah {
-                padding-left: 3.25rem !important;
+                padding-left: 3.1rem !important;
             }
             .status-big-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 1.1rem;
+                gap: clamp(0.5rem, 1.1vh, 0.9rem);
             }
-            .status-btn {
-                padding: 0.95rem 1.35rem;
-                min-height: 76px;
-                gap: 0.65rem;
-                border-radius: 0.8rem;
+            .status-btn, .media-card-btn, .trigger-btn {
+                padding: clamp(0.5rem, 0.9vh, 0.75rem) clamp(0.8rem, 1vw, 1.1rem);
+                min-height: clamp(50px, 6vh, 64px);
+                gap: 0.5rem;
+                border-radius: 0.7rem;
             }
             .sbt-icon {
-                width: 44px;
-                height: 44px;
-                border-radius: 0.6rem;
+                width: clamp(30px, 3.8vh, 38px);
+                height: clamp(30px, 3.8vh, 38px);
+                border-radius: 0.55rem;
             }
             .sbt-svg {
-                width: 24px;
-                height: 24px;
+                width: 22px;
+                height: 22px;
             }
             .sbt-name {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
             .sbt-desc {
-                font-size: 0.9rem;
+                font-size: 0.82rem;
             }
             .status-pill {
-                padding: 0.75rem 1.4rem;
-                font-size: 1.12rem;
+                padding: 0.5rem 1.1rem;
+                font-size: 1rem;
+                min-height: clamp(36px, 4.6vh, 44px);
             }
             .status-pill-change {
-                font-size: 0.9rem;
-                padding: 0.35rem 0.85rem;
+                font-size: 0.85rem;
+                padding: 0.25rem 0.7rem;
             }
             .media-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 1.1rem;
-            }
-            .trigger-btn {
-                padding: 1rem 1.35rem;
-                min-height: 86px;
-                gap: 0.7rem;
-                border-radius: 0.8rem;
+                gap: clamp(0.5rem, 1.1vh, 0.9rem);
             }
             .trigger-icon svg {
-                width: 28px;
-                height: 28px;
-            }
-            .trigger-lbl {
-                font-size: 1.15rem;
-                font-weight: 700;
-            }
-            .rating-section {
-                gap: 1rem;
-            }
-            .rating-q {
-                font-size: 1.45rem;
-                font-weight: 700;
-            }
-            .rating-bar {
-                gap: 0.85rem;
-                border-radius: 0.85rem;
-            }
-            .rating-opt {
-                padding: 0.85rem 1.1rem;
-                min-height: 70px;
-                gap: 0.45rem;
-            }
-            .rating-opt .r-emoji {
-                font-size: 1.75rem;
-            }
-            .rating-opt span:last-child {
-                font-size: 1.02rem;
-                font-weight: 700;
-            }
-            .btn-submit {
-                min-height: 56px;
-                padding: 0.95rem 2.4rem;
-                font-size: 1.12rem;
-                border-radius: 0.8rem;
-            }
-            #submitIcon {
                 width: 24px;
                 height: 24px;
             }
+            .trigger-lbl {
+                font-size: 1rem;
+                font-weight: 700;
+            }
+            .rating-section {
+                gap: clamp(0.3rem, 0.6vh, 0.45rem);
+            }
+            .rating-q {
+                font-size: 1.12rem;
+                font-weight: 700;
+            }
+            .rating-bar {
+                gap: 0.6rem;
+                border-radius: 0.75rem;
+                padding: 0.3rem;
+            }
+            .rating-opt {
+                padding: clamp(0.3rem, 0.6vh, 0.5rem) 0.8rem;
+                min-height: clamp(40px, 4.8vh, 50px);
+                gap: 0.4rem;
+            }
+            .rating-opt .r-emoji {
+                font-size: 1.45rem;
+            }
+            .rating-opt span:last-child {
+                font-size: 0.92rem;
+                font-weight: 700;
+            }
+            .btn-submit {
+                min-height: clamp(42px, 5vh, 50px);
+                padding: clamp(0.5rem, 1vh, 0.75rem) 2rem;
+                font-size: 1.05rem;
+                border-radius: 0.7rem;
+            }
+            #submitIcon {
+                width: 20px;
+                height: 20px;
+            }
             .modal-win {
-                max-width: 680px;
+                max-width: 640px;
             }
             .footer span {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
         }
 
@@ -1780,22 +2011,26 @@
                 overflow-y: auto;
             }
             .card-title {
-                font-size: 1.95rem;
+                font-size: 2.35rem;
+                font-weight: 900;
+                letter-spacing: -0.025em;
+                line-height: 1.15;
             }
             .card-sub {
-                font-size: 0.92rem;
-                margin-top: 0.35rem;
+                font-size: 1.05rem;
+                margin-top: 0.75rem;
             }
             .field {
                 gap: 0.45rem;
             }
             .field-lbl {
-                font-size: 1.16rem;
-                font-weight: 700;
+                font-size: 0.98rem;
+                font-weight: 600;
+                gap: 0.45rem;
             }
             .field-lbl svg {
-                width: 20px;
-                height: 20px;
+                width: 17px;
+                height: 17px;
             }
             .field-input {
                 padding: 0.6rem 1rem;
@@ -1917,12 +2152,13 @@
                 gap: 0.45rem;
             }
             .field-lbl {
-                font-size: 1.18rem;
-                font-weight: 700;
+                font-size: 1rem;
+                font-weight: 600;
+                gap: 0.45rem;
             }
             .field-lbl svg {
-                width: 21px;
-                height: 21px;
+                width: 18px;
+                height: 18px;
             }
             .field-input {
                 padding: 0.65rem 1.15rem;
@@ -2000,12 +2236,13 @@
                 gap: 0.45rem;
             }
             .field-lbl {
-                font-size: 1.28rem;
-                font-weight: 700;
+                font-size: 1.05rem;
+                font-weight: 600;
+                gap: 0.45rem;
             }
             .field-lbl svg {
-                width: 24px;
-                height: 24px;
+                width: 19px;
+                height: 19px;
             }
             .field-input {
                 padding: 0.75rem 1.25rem;
@@ -2106,7 +2343,7 @@
 
         <!-- ─── Navbar ─── -->
         <header class="navbar" role="banner">
-            <a href="/" class="nav-brand" aria-label="BUTAGI - Beranda">
+            <a href="/" class="nav-brand" onclick="transitionToHero(event)" aria-label="BUTAGI - Beranda">
                 <div class="nav-logos">
                     <img src="{{ asset('img/Gambar_SMKN_1SUBANG.png') }}" alt="Logo SMKN 1 Subang" class="nav-logo-img">
                     <div class="nav-logo-divider" aria-hidden="true"></div>
@@ -2118,6 +2355,14 @@
                 </div>
             </a>
             <div class="nav-actions">
+                <!-- Fullscreen toggle button -->
+                <button class="theme-btn" id="fsToggle" onclick="toggleFullscreen()" aria-label="Layar penuh" title="Layar penuh">
+                    <!-- Enter fullscreen icon -->
+                    <svg id="iconEnterFs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                    <!-- Exit fullscreen icon -->
+                    <svg id="iconExitFs" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                    <span id="fsLabel" class="nav-text">Layar Penuh</span>
+                </button>
                 <!-- Theme toggle button -->
                 <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Ganti tema terang/gelap" title="Ganti tema">
                     <!-- Moon icon (shown in dark mode) -->
@@ -2126,14 +2371,27 @@
                     <svg id="iconSun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     <span id="themeLabel" class="nav-text">Dark</span>
                 </button>
-                <a href="/" class="nav-home" aria-label="Kembali ke beranda">
+                <button type="button" class="nav-home" id="btnNavHome" onclick="transitionToHero()" aria-label="Kembali ke beranda" style="display:none; cursor:pointer;">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <span class="nav-text">Beranda</span>
-                </a>
+                </button>
             </div>
         </header>
 
-        <!-- ─── Main Stage ─── -->
+        <!-- ─── Kiosk Hero / Beranda View (Seamless Fullscreen SPA) ─── -->
+        <section class="hero" id="kioskHero" style="display:none;" aria-label="Layar Sambutan">
+            <div class="hero-inner">
+                <h1 class="hero-title title-gradient">BUKU TAMU DIGITAL</h1>
+                <button type="button" id="btnGoToForm" class="cta-btn" onclick="transitionToForm()" aria-label="Mulai mengisi buku tamu">
+                    <span>Isi buku tamu</span>
+                    <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ─── Main Stage (Form View) ─── -->
         <main class="stage" id="main-content" role="main">
             <div class="glass-card" role="region" aria-label="Formulir Kehadiran Tamu">
 
@@ -2156,8 +2414,8 @@
                         {{-- ① NAMA LENGKAP --}}
                         <div class="field">
                             <label for="inputNama" class="field-lbl">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Nama Lengkap
+                                <span class="lbl-emoji" aria-hidden="true">👤</span>
+                                <span class="lbl-text">Nama Lengkap</span>
                             </label>
                             <div class="field-wrap">
                                 <input type="text" id="inputNama" name="nama" class="field-input" placeholder="Masukkan nama lengkap Anda..." required aria-required="true">
@@ -2167,8 +2425,8 @@
                         {{-- ② STATUS SELECTOR (Instansi / Sekolah) --}}
                         <div class="field">
                             <div class="field-lbl" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                Status Pengunjung
+                                <span class="lbl-emoji" aria-hidden="true">👥</span>
+                                <span class="lbl-text">Status Pengunjung</span>
                             </div>
 
                             <!-- Big buttons (initial state) -->
@@ -2229,30 +2487,44 @@
                             </div>
                         </div>
 
-                        {{-- ③ PHOTO + SIGNATURE (2-col grid) --}}
+                        {{-- ③ PHOTO + SIGNATURE (2-col grid, matches status-btn card style) --}}
                         <div class="field">
                             <div class="field-lbl" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                                Foto & Tanda Tangan
+                                <span class="lbl-emoji" aria-hidden="true">📷</span>
+                                <span class="lbl-text">Foto & Tanda Tangan</span>
                             </div>
                             <div class="media-grid" role="group" aria-label="Ambil foto dan tanda tangan">
                                 <!-- Photo trigger -->
-                                <button type="button" class="trigger-btn" id="btnPhoto" onclick="openPhotoModal()" aria-label="Buka kamera untuk ambil foto">
-                                    <img id="thumbPhoto" class="trigger-thumb" src="" alt="Thumbnail foto">
-                                    <div class="trigger-icon" id="photoIcon" aria-hidden="true">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                <button type="button" class="status-btn media-card-btn" id="btnPhoto" onclick="openPhotoModal()" aria-label="Buka kamera untuk ambil foto">
+                                    <div class="sbt-icon" id="photoIconWrap" aria-hidden="true">
+                                        <img id="thumbPhoto" class="media-thumb-img" src="" alt="Thumbnail foto" style="display:none;">
+                                        <svg id="photoSvg" class="sbt-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                            <circle cx="12" cy="13" r="3"/>
+                                        </svg>
                                     </div>
-                                    <span class="trigger-lbl" id="photoLbl">Ambil Foto Tamu</span>
-                                    <span class="trigger-badge" aria-label="Foto sudah diambil">✓ Terambil</span>
+                                    <div class="media-btn-text">
+                                        <div class="sbt-name" id="photoLbl">Ambil Foto</div>
+                                        <div class="sbt-desc" id="photoDesc">Kamera Pengunjung</div>
+                                    </div>
+                                    <span class="media-badge" id="photoBadge" aria-label="Foto sudah diambil">✓ Terambil</span>
                                 </button>
 
                                 <!-- Signature trigger -->
-                                <button type="button" class="trigger-btn" id="btnSig" onclick="openSigModal()" aria-label="Buka kanvas tanda tangan">
-                                    <div class="trigger-icon" aria-hidden="true">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><circle cx="11" cy="11" r="2"/></svg>
+                                <button type="button" class="status-btn media-card-btn" id="btnSig" onclick="openSigModal()" aria-label="Buka kanvas tanda tangan">
+                                    <div class="sbt-icon" id="sigIconWrap" aria-hidden="true">
+                                        <img id="thumbSig" class="media-thumb-img" src="" alt="Thumbnail tanda tangan" style="display:none;">
+                                        <svg id="sigSvg" class="sbt-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                            <circle cx="11" cy="11" r="2"/>
+                                        </svg>
                                     </div>
-                                    <span class="trigger-lbl" id="sigLbl">Tanda Tangan</span>
-                                    <span class="trigger-badge" aria-label="Tanda tangan sudah diisi">✓ Terisi</span>
+                                    <div class="media-btn-text">
+                                        <div class="sbt-name" id="sigLbl">Tanda Tangan</div>
+                                        <div class="sbt-desc" id="sigDesc">Goreskan Digital</div>
+                                    </div>
+                                    <span class="media-badge" id="sigBadge" aria-label="Tanda tangan sudah diisi">✓ Terisi</span>
                                 </button>
                             </div>
                         </div>
@@ -2408,12 +2680,12 @@
                     <span>Kembali ke beranda dalam <strong id="successTimer">4</strong> detik...</span>
                 </div>
                 <div class="success-actions" style="margin-top:0.4rem; width:100%;">
-                    <a href="/" class="btn-success-home" id="btnSuccessHome" style="width:100%;">
+                    <button type="button" class="btn-success-home" id="btnSuccessHome" style="width:100%; border:none; cursor:pointer;">
                         <span>Selesai & Kembali</span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>
                         </svg>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2450,6 +2722,60 @@
     (function() {
         const saved = localStorage.getItem('butagi_theme') || 'light';
         applyTheme(saved);
+    })();
+
+    // ─── Fullscreen Toggle ─────────────────────────
+    function toggleFullscreen() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (!isFs) {
+            const el = document.documentElement;
+            localStorage.setItem('butagi_fullscreen', '1');
+            if (el.requestFullscreen) {
+                el.requestFullscreen().catch(err => console.warn('Fullscreen:', err));
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            }
+        } else {
+            localStorage.removeItem('butagi_fullscreen');
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(err => console.warn('Exit fullscreen:', err));
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
+
+    function updateFullscreenUi() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (isFs) {
+            localStorage.setItem('butagi_fullscreen', '1');
+        }
+        const iconEnter = document.getElementById('iconEnterFs');
+        const iconExit  = document.getElementById('iconExitFs');
+        const fsLabel   = document.getElementById('fsLabel');
+        if (iconEnter) iconEnter.style.display = isFs ? 'none' : 'block';
+        if (iconExit)  iconExit.style.display  = isFs ? 'block' : 'none';
+        if (fsLabel)   fsLabel.textContent    = isFs ? 'Kecilkan' : 'Layar Penuh';
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenUi);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenUi);
+
+    // Auto-resume fullscreen if user previously enabled fullscreen
+    (function initAutoFullscreen() {
+        if (localStorage.getItem('butagi_fullscreen') === '1') {
+            const tryFs = () => {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    const el = document.documentElement;
+                    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                }
+            };
+            tryFs();
+            ['pointerdown', 'touchend', 'click', 'focusin'].forEach(evt => {
+                window.addEventListener(evt, tryFs, { once: true });
+            });
+        }
     })();
 
 
@@ -2591,7 +2917,15 @@
         const v = document.getElementById('camVideo');
         const i = document.getElementById('camImg');
         v.style.display = 'block'; i.style.display = 'none';
-        document.getElementById('btnCapture').style.display  = 'inline-flex';
+        const btnCap = document.getElementById('btnCapture');
+        if (btnCap) {
+            btnCap.style.display  = 'inline-flex';
+            btnCap.disabled = false;
+            btnCap.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Ambil Foto (3s)</span>
+            `;
+        }
         document.getElementById('btnRetake').style.display   = 'none';
         document.getElementById('btnSavePhoto').style.display= 'none';
         document.getElementById('camHint').textContent = 'Posisikan wajah Anda di tengah layar.';
@@ -2648,7 +2982,7 @@
         flash.classList.add('flash');
         setTimeout(() => flash.classList.remove('flash'), 220);
 
-        // Capture to canvas (mirrored, optimized to max 640px for instant upload)
+        // Capture to canvas (optimized to max 640px for instant upload)
         const cvs = document.createElement('canvas');
         let targetW = v.videoWidth || 640;
         let targetH = v.videoHeight || 480;
@@ -2660,6 +2994,7 @@
         cvs.width  = targetW; 
         cvs.height = targetH;
         const ctx = cvs.getContext('2d');
+
         ctx.translate(cvs.width, 0); 
         ctx.scale(-1, 1);
         ctx.drawImage(v, 0, 0, cvs.width, cvs.height);
@@ -2699,10 +3034,17 @@
         // Update trigger button visuals
         const btn   = document.getElementById('btnPhoto');
         const thumb = document.getElementById('thumbPhoto');
+        const svg   = document.getElementById('photoSvg');
+        const desc  = document.getElementById('photoDesc');
+
         btn.classList.add('has-value');
-        thumb.src = _tempPhoto; thumb.style.display = 'block';
-        document.getElementById('photoIcon').style.display = 'none';
+        if (thumb) {
+            thumb.src = _tempPhoto;
+            thumb.style.display = 'block';
+        }
+        if (svg) svg.style.display = 'none';
         document.getElementById('photoLbl').textContent = 'Ubah Foto';
+        if (desc) desc.textContent = 'Foto tersimpan ✓';
 
         closePhotoModal();
         toast('Foto berhasil diambil!', 'success');
@@ -2791,14 +3133,30 @@
     function confirmSig() {
         const dataUrl = _sigHasData ? _sigCanvas.toDataURL('image/png') : '';
         document.getElementById('ttdBase64').value = dataUrl;
-        const btn = document.getElementById('btnSig');
+        const btn   = document.getElementById('btnSig');
+        const thumb = document.getElementById('thumbSig');
+        const svg   = document.getElementById('sigSvg');
+        const desc  = document.getElementById('sigDesc');
+
         if (_sigHasData) {
             btn.classList.add('has-value');
+            if (thumb) {
+                thumb.src = dataUrl;
+                thumb.style.display = 'block';
+            }
+            if (svg) svg.style.display = 'none';
             document.getElementById('sigLbl').textContent = 'Ubah Tanda Tangan';
+            if (desc) desc.textContent = 'Tersimpan ✓';
             toast('Tanda tangan berhasil disimpan!', 'success');
         } else {
             btn.classList.remove('has-value');
+            if (thumb) {
+                thumb.style.display = 'none';
+                thumb.src = '';
+            }
+            if (svg) svg.style.display = 'block';
             document.getElementById('sigLbl').textContent = 'Tanda Tangan';
+            if (desc) desc.textContent = 'Goreskan Digital';
         }
         closeSigModal();
     }
@@ -2874,26 +3232,130 @@
         }
     }
 
+    function resetFormFields() {
+        const form = document.getElementById('tamuForm');
+        if (form) form.reset();
+
+        document.getElementById('inputNama').value = '';
+        resetStatus();
+
+        document.getElementById('fotoBase64').value = '';
+        document.getElementById('ttdBase64').value = '';
+
+        const btnPhoto = document.getElementById('btnPhoto');
+        const thumbPhoto = document.getElementById('thumbPhoto');
+        const photoSvg = document.getElementById('photoSvg');
+        const photoDesc = document.getElementById('photoDesc');
+        const photoLbl = document.getElementById('photoLbl');
+        if (btnPhoto) btnPhoto.classList.remove('has-value');
+        if (thumbPhoto) { thumbPhoto.style.display = 'none'; thumbPhoto.src = ''; }
+        if (photoSvg) photoSvg.style.display = 'block';
+        if (photoLbl) photoLbl.textContent = 'Ambil Foto';
+        if (photoDesc) photoDesc.textContent = 'Kamera Pengunjung';
+        _tempPhoto = '';
+
+        const btnSig = document.getElementById('btnSig');
+        const thumbSig = document.getElementById('thumbSig');
+        const sigSvg = document.getElementById('sigSvg');
+        const sigDesc = document.getElementById('sigDesc');
+        const sigLbl = document.getElementById('sigLbl');
+        if (btnSig) btnSig.classList.remove('has-value');
+        if (thumbSig) { thumbSig.style.display = 'none'; thumbSig.src = ''; }
+        if (sigSvg) sigSvg.style.display = 'block';
+        if (sigLbl) sigLbl.textContent = 'Tanda Tangan';
+        if (sigDesc) sigDesc.textContent = 'Goreskan Digital';
+        clearSig();
+
+        setRating('senang');
+        resetSubmitBtn();
+    }
+
+    // ─── Seamless In-Page Navigation (Keeps Fullscreen Uninterrupted) ───
+    function transitionToForm() {
+        // If tablet was not yet in fullscreen, entering the form via user tap triggers fullscreen cleanly
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            const el = document.documentElement;
+            try {
+                if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            } catch (e) {}
+        }
+        const hero = document.getElementById('kioskHero');
+        const form = document.getElementById('main-content');
+        const btnHome = document.getElementById('btnNavHome');
+        if (hero) hero.style.display = 'none';
+        if (form) form.style.display = 'flex';
+        if (btnHome) btnHome.style.display = 'inline-flex';
+        if (window.location.pathname !== '/guest-form') {
+            history.pushState({ view: 'form' }, '', '/guest-form');
+        }
+        window.scrollTo(0, 0);
+    }
+
+    function transitionToHero(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const hero = document.getElementById('kioskHero');
+        const form = document.getElementById('main-content');
+        const btnHome = document.getElementById('btnNavHome');
+        if (form) form.style.display = 'none';
+        if (hero) hero.style.display = 'flex';
+        if (btnHome) btnHome.style.display = 'none';
+        if (window.location.pathname !== '/' && window.location.pathname !== '') {
+            history.pushState({ view: 'hero' }, '', '/');
+        }
+        window.scrollTo(0, 0);
+    }
+
+    function syncKioskView() {
+        const path = window.location.pathname;
+        const hero = document.getElementById('kioskHero');
+        const form = document.getElementById('main-content');
+        const btnHome = document.getElementById('btnNavHome');
+        if (path === '/guest-form') {
+            if (hero) hero.style.display = 'none';
+            if (form) form.style.display = 'flex';
+            if (btnHome) btnHome.style.display = 'inline-flex';
+        } else {
+            if (form) form.style.display = 'none';
+            if (hero) hero.style.display = 'flex';
+            if (btnHome) btnHome.style.display = 'none';
+        }
+    }
+
+    // Initialize view based on current URL and listen to browser history changes
+    syncKioskView();
+    window.addEventListener('popstate', syncKioskView);
+
     function showSuccessPopup() {
         const modal = document.getElementById('successModal');
         modal.classList.add('open');
 
         let secondsLeft = 4;
         const timerEl = document.getElementById('successTimer');
+        if (timerEl) timerEl.textContent = secondsLeft;
         
+        if (_redirectInterval) clearInterval(_redirectInterval);
         _redirectInterval = setInterval(() => {
             secondsLeft -= 1;
             if (timerEl) timerEl.textContent = secondsLeft;
             if (secondsLeft <= 0) {
                 clearInterval(_redirectInterval);
-                window.location.href = '/';
+                _redirectInterval = null;
+                modal.classList.remove('open');
+                resetFormFields();
+                transitionToHero();
             }
         }, 1000);
 
         document.getElementById('btnSuccessHome').onclick = function(e) {
             e.preventDefault();
-            clearInterval(_redirectInterval);
-            window.location.href = '/';
+            if (_redirectInterval) {
+                clearInterval(_redirectInterval);
+                _redirectInterval = null;
+            }
+            modal.classList.remove('open');
+            resetFormFields();
+            transitionToHero();
         };
     }
 
@@ -2902,8 +3364,13 @@
     document.getElementById('sigModal').addEventListener('click',   e => { if(e.target === e.currentTarget) closeSigModal(); });
     document.getElementById('successModal').addEventListener('click', e => { 
         if(e.target === e.currentTarget) {
-            if (_redirectInterval) clearInterval(_redirectInterval);
-            window.location.href = '/';
+            if (_redirectInterval) {
+                clearInterval(_redirectInterval);
+                _redirectInterval = null;
+            }
+            document.getElementById('successModal').classList.remove('open');
+            resetFormFields();
+            transitionToHero();
         } 
     });
 
@@ -2913,8 +3380,13 @@
             closePhotoModal(); 
             closeSigModal(); 
             if (document.getElementById('successModal').classList.contains('open')) {
-                if (_redirectInterval) clearInterval(_redirectInterval);
-                window.location.href = '/';
+                if (_redirectInterval) {
+                    clearInterval(_redirectInterval);
+                    _redirectInterval = null;
+                }
+                document.getElementById('successModal').classList.remove('open');
+                resetFormFields();
+                transitionToHero();
             }
         }
     });
