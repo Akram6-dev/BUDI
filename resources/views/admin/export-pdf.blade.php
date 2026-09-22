@@ -85,18 +85,18 @@
                 </td>
                 <td class="col-status">{{ strtoupper($row['status']) }}</td>
                 <td class="col-img img-cell">
-                    @if(!empty($row['foto_data_uri']) && $row['foto_data_uri'] !== ($blankPng ?? ''))
+                    @if(!empty($row['foto_src']))
                         <div class="img-box">
-                            <img src="{{ $row['foto_data_uri'] }}" alt="Foto">
+                            <img src="{{ $row['foto_src'] }}" alt="Foto">
                         </div>
                     @else
                         <span style="color: #9ca3af; font-size: 9px; font-style: italic;">Tidak ada foto</span>
                     @endif
                 </td>
                 <td class="col-img ttd-cell">
-                    @if(!empty($row['ttd_data_uri']) && $row['ttd_data_uri'] !== ($blankPng ?? ''))
+                    @if(!empty($row['ttd_src']))
                         <div class="ttd-box">
-                            <img src="{{ $row['ttd_data_uri'] }}" alt="Tanda Tangan">
+                            <img src="{{ $row['ttd_src'] }}" alt="Tanda Tangan">
                         </div>
                     @else
                         <span style="color: #9ca3af; font-size: 9px;">-</span>

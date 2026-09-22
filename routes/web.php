@@ -52,6 +52,7 @@ Route::post('/logout', [AdminController::class, 'logout']);
 Route::middleware(['admin.auth'])->group(function () {
     Route::get('/admin/dashboard',  [AdminController::class, 'dashboard']);
     Route::get('/admin/export-pdf', [AdminController::class, 'exportPdf']);
+    Route::get('/admin/export-excel', [AdminController::class, 'exportExcel']);
 
     // Admin APIs for dashboard
     Route::prefix('api')->group(function () {

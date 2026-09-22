@@ -6,8 +6,15 @@ use App\Models\Admin;
 use App\Models\Tamu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class AdminController extends Controller
 {
@@ -226,6 +233,224 @@ class AdminController extends Controller
         $section = $request->get('section', 'instansi');
         $isSchool = in_array($section, ['sekolah', 'student', 'school']);
 
+        $query = $this->buildExportQuery($request, $isSchool);
+
+        $items = $query->get(['id', 'nama', 'instansi', 'asal_sekolah', 'status', 'ulasan', 'foto', 'tanda_tangan']);
+
+        $rows = $items->values()->map(function ($item, $index) {
+            $signaturePath = ($item->tanda_tangan ?? '') !== '' ? $item->tanda_tangan : null;
+            $fotoPath = $this->resolveStoredImagePath(($item->foto ?? '') !== '' ? $item->foto : null);
+            $ttdPath = $this->resolveStoredImagePath($signaturePath);
+
+            if (($item->foto ?? '') !== '' && !$fotoPath) {
+                Log::warning('Foto export PDF tidak ditemukan.', ['id' => $item->id, 'foto' => $item->foto]);
+            }
+
+            if ($signaturePath && !$ttdPath) {
+                Log::warning('Tanda tangan export PDF tidak ditemukan.', ['id' => $item->id, 'tanda_tangan' => $signaturePath]);
+            }
+
+            return [
+                'no' => $index + 1,
+                'nama' => $item->nama,
+                'instansi' => $item->instansi ?? '-',
+                'asal_sekolah' => $item->asal_sekolah ?? '-',
+                'ulasan' => $item->ulasan ?? 'senang',
+                'status' => $item->status,
+                'foto_src' => $fotoPath ? $this->imageToPdfSource($fotoPath, 220, 165, 68, 'foto') : null,
+                'ttd_src' => $ttdPath ? $this->imageToPdfSource($ttdPath, 220, 100, 78, 'ttd') : null,
+            ];
+        });
+
+        $schoolFilter = $isSchool ? trim((string) ($request->get('search_sekolah', $request->get('search_kelas', '')))) : '';
+        $sectionLabel = $isSchool
+            ? 'SEKOLAH' . ($schoolFilter !== '' ? ' ' . strtoupper($schoolFilter) : '')
+            : 'INSTANSI';
+        $pdfChroot = array_filter(array_unique([
+            base_path(),
+            storage_path(),
+            public_path(),
+            dirname(base_path()),
+            !empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : null,
+            !empty($_SERVER['DOCUMENT_ROOT']) ? dirname($_SERVER['DOCUMENT_ROOT']) : null,
+        ]));
+
+        $pdf = Pdf::loadView('admin.export-pdf', [
+            'title' => 'DAFTAR KEHADIRAN PENGUNJUNG',
+            'section' => $section,
+            'isSchool' => $isSchool,
+            'sectionLabel' => $sectionLabel,
+            'rows' => $rows,
+            'generatedAt' => now(),
+            'blankPng' => self::BLANK_PNG_DATA_URI,
+        ])
+        ->setPaper('a4', 'landscape')
+        ->setOption('isHtml5ParserEnabled', true)
+        ->setOption('isRemoteEnabled', true)
+        ->setOption('chroot', $pdfChroot);
+
+        $filename = $isSchool ? 'daftar-kehadiran-sekolah.pdf' : 'daftar-kehadiran-instansi.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        if (!Session::get('admin_logged_in')) {
+            return redirect('/login');
+        }
+
+        $section = $request->get('section', 'instansi');
+        $isSchool = in_array($section, ['sekolah', 'student', 'school']);
+        $items = $this->buildExportQuery($request, $isSchool)
+            ->get(['id', 'nama', 'instansi', 'asal_sekolah', 'status', 'ulasan', 'foto', 'tanda_tangan', 'created_at']);
+
+        $schoolFilter = $isSchool ? trim((string) ($request->get('search_sekolah', $request->get('search_kelas', '')))) : '';
+        $sectionLabel = $isSchool
+            ? 'SEKOLAH' . ($schoolFilter !== '' ? ' ' . strtoupper($schoolFilter) : '')
+            : 'INSTANSI';
+
+        $filename = $isSchool ? 'daftar-kehadiran-sekolah.xlsx' : 'daftar-kehadiran-instansi.xlsx';
+        $exportDir = storage_path('app/exports');
+        if (!is_dir($exportDir)) {
+            @mkdir($exportDir, 0755, true);
+        }
+
+        $filePath = $exportDir . DIRECTORY_SEPARATOR . uniqid('export-', true) . '.xlsx';
+        $this->writeExcelFile($filePath, 'DAFTAR KEHADIRAN PENGUNJUNG', $sectionLabel, $items, $isSchool);
+
+        return response()
+            ->download($filePath, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Cache-Control' => 'max-age=0, no-cache, no-store, must-revalidate',
+            ])
+            ->deleteFileAfterSend(true);
+    }
+
+    private function writeExcelFile(string $filePath, string $title, string $sectionLabel, $items, bool $isSchool): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle($isSchool ? 'Tamu Sekolah' : 'Tamu Instansi');
+
+        $sheet->mergeCells('A1:I1');
+        $sheet->mergeCells('A2:I2');
+        $sheet->mergeCells('A3:I3');
+        $sheet->setCellValue('A1', $title);
+        $sheet->setCellValue('A2', $sectionLabel);
+        $sheet->setCellValue('A3', 'Dicetak: ' . now()->format('d/m/Y H:i'));
+
+        $headers = ['No', 'Foto', 'Tanda Tangan', 'Nama Tamu', $isSchool ? 'Asal Sekolah' : 'Instansi', 'Ulasan', 'Status', 'Waktu Input', 'ID'];
+        $sheet->fromArray($headers, null, 'A5');
+
+        $rowNumber = 6;
+        foreach ($items as $index => $item) {
+            $sheet->setCellValue('A' . $rowNumber, $index + 1);
+            $sheet->setCellValue('D' . $rowNumber, $item->nama);
+            $sheet->setCellValue('E' . $rowNumber, $isSchool ? ($item->asal_sekolah ?? '-') : ($item->instansi ?? '-'));
+            $sheet->setCellValue('F' . $rowNumber, strtoupper($item->ulasan ?? '-'));
+            $sheet->setCellValue('G' . $rowNumber, strtoupper($item->status ?? '-'));
+            $sheet->setCellValue('H' . $rowNumber, optional($item->created_at)->format('d/m/Y H:i'));
+            $sheet->setCellValue('I' . $rowNumber, $item->id);
+
+            // Set tinggi baris agar foto & tanda tangan muat dengan proporsional
+            $sheet->getRowDimension($rowNumber)->setRowHeight(55);
+
+            // Sematkan Foto Tamu jika ada
+            $fotoPath = $this->resolveStoredImagePath(($item->foto ?? '') !== '' ? $item->foto : null);
+            if ($fotoPath && @is_file($fotoPath)) {
+                try {
+                    $drawingFoto = new Drawing();
+                    $drawingFoto->setName('Foto');
+                    $drawingFoto->setDescription('Foto ' . $item->nama);
+                    $drawingFoto->setPath($fotoPath);
+                    $drawingFoto->setCoordinates('B' . $rowNumber);
+                    $drawingFoto->setHeight(50);
+                    $drawingFoto->setOffsetX(12);
+                    $drawingFoto->setOffsetY(4);
+                    $drawingFoto->setWorksheet($sheet);
+                } catch (\Throwable $e) {
+                    $sheet->setCellValue('B' . $rowNumber, '-');
+                }
+            } else {
+                $sheet->setCellValue('B' . $rowNumber, '-');
+            }
+
+            // Sematkan Tanda Tangan Tamu jika ada
+            $ttdPath = $this->resolveStoredImagePath(($item->tanda_tangan ?? '') !== '' ? $item->tanda_tangan : null);
+            if ($ttdPath && @is_file($ttdPath)) {
+                try {
+                    $drawingTtd = new Drawing();
+                    $drawingTtd->setName('Tanda Tangan');
+                    $drawingTtd->setDescription('TTD ' . $item->nama);
+                    $drawingTtd->setPath($ttdPath);
+                    $drawingTtd->setCoordinates('C' . $rowNumber);
+                    $drawingTtd->setHeight(40);
+                    $drawingTtd->setOffsetX(15);
+                    $drawingTtd->setOffsetY(8);
+                    $drawingTtd->setWorksheet($sheet);
+                } catch (\Throwable $e) {
+                    $sheet->setCellValue('C' . $rowNumber, '-');
+                }
+            } else {
+                $sheet->setCellValue('C' . $rowNumber, '-');
+            }
+
+            $rowNumber++;
+        }
+
+        if ($rowNumber === 6) {
+            $sheet->mergeCells('A6:I6');
+            $sheet->setCellValue('A6', 'Tidak ada data.');
+            $rowNumber = 7;
+        }
+
+        $lastDataRow = $rowNumber - 1;
+
+        $sheet->getStyle('A1:A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(15);
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A3')->getFont()->setSize(10)->getColor()->setRGB('4B5563');
+
+        $sheet->getStyle('A5:I5')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => '111827']],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E5E7EB'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        $sheet->getStyle('A5:I' . $lastDataRow)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '9CA3AF'],
+                ],
+            ],
+        ]);
+
+        $sheet->getStyle('A6:C' . $lastDataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('F6:I' . $lastDataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:I' . $lastDataRow)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+        foreach (['A' => 8, 'B' => 16, 'C' => 20, 'D' => 26, 'E' => 28, 'F' => 14, 'G' => 14, 'H' => 18, 'I' => 8] as $column => $width) {
+            $sheet->getColumnDimension($column)->setWidth($width);
+        }
+
+        $sheet->freezePane('A6');
+        $sheet->setAutoFilter('A5:I' . $lastDataRow);
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    private function buildExportQuery(Request $request, bool $isSchool)
+    {
         $query = Tamu::query()->where('status', $isSchool ? 'sekolah' : 'instansi');
 
         if ($isSchool) {
@@ -248,68 +473,55 @@ class AdminController extends Controller
             $query->where('nama', 'like', $request->letter . '%');
         }
 
-        if ($request->filled('sort')) {
-            $sortVal = $request->sort;
-            if (in_array($sortVal, ['asc', 'desc'])) {
-                $query->orderBy('nama', $sortVal);
-            } else {
-                $query->orderBy('created_at', 'desc');
-            }
-        } else {
-            $query->orderBy('created_at', 'desc');
+        if ($request->filled('sort') && in_array($request->sort, ['asc', 'desc'], true)) {
+            return $query->orderBy('nama', $request->sort);
         }
 
-        $items = $query->get(['id', 'nama', 'instansi', 'asal_sekolah', 'status', 'ulasan', 'foto', 'tanda_tangan']);
-
-        $rows = $items->values()->map(function ($item, $index) {
-            $signaturePath = ($item->tanda_tangan ?? '') !== '' ? $item->tanda_tangan : null;
-
-            return [
-                'no' => $index + 1,
-                'nama' => $item->nama,
-                'instansi' => $item->instansi ?? '-',
-                'asal_sekolah' => $item->asal_sekolah ?? '-',
-                'ulasan' => $item->ulasan ?? 'senang',
-                'status' => $item->status,
-                'foto_data_uri' => $this->imageToDataUri(($item->foto ?? '') !== '' ? $item->foto : null, 220, 165, 68),
-                'ttd_data_uri' => $signaturePath ? $this->imageToDataUri($signaturePath, 220, 100, 78) : self::BLANK_PNG_DATA_URI,
-            ];
-        });
-
-        $schoolFilter = $isSchool ? trim((string) ($request->get('search_sekolah', $request->get('search_kelas', '')))) : '';
-        $sectionLabel = $isSchool
-            ? 'SEKOLAH' . ($schoolFilter !== '' ? ' ' . strtoupper($schoolFilter) : '')
-            : 'INSTANSI';
-
-        $pdf = Pdf::loadView('admin.export-pdf', [
-            'title' => 'DAFTAR KEHADIRAN PENGUNJUNG',
-            'section' => $section,
-            'isSchool' => $isSchool,
-            'sectionLabel' => $sectionLabel,
-            'rows' => $rows,
-            'generatedAt' => now(),
-            'blankPng' => self::BLANK_PNG_DATA_URI,
-        ])
-        ->setPaper('a4', 'landscape')
-        ->setOption('isHtml5ParserEnabled', true)
-        ->setOption('isRemoteEnabled', true);
-
-        $filename = $isSchool ? 'daftar-kehadiran-sekolah.pdf' : 'daftar-kehadiran-instansi.pdf';
-
-        return $pdf->download($filename);
+        return $query->orderBy('created_at', 'desc');
     }
 
-    private function imageToDataUri(?string $relativePath, int $maxWidth, int $maxHeight, int $quality): string
+    private function imageToPdfSource(string $fullPath, int $maxWidth, int $maxHeight, int $quality, string $prefix): ?string
     {
-        if (!$relativePath) {
-            return self::BLANK_PNG_DATA_URI;
+        if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
+            $optimized = $this->optimizedImageForPdf($fullPath, $maxWidth, $maxHeight, $quality, $prefix);
+            if ($optimized !== null) {
+                return $optimized;
+            }
         }
 
-        // Clean any leading slash or redundant 'public/' / 'storage/' prefix
-        $cleanPath = ltrim($relativePath, '/\\');
-        $cleanPath = preg_replace('#^(public/|storage/)+#i', '', $cleanPath);
+        $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'], true)) {
+            return str_replace('\\', '/', $fullPath);
+        }
 
-        // Candidate paths for both local and shared hosting (with or without storage symlink)
+        if (@filesize($fullPath) <= 4 * 1024 * 1024) {
+            return $this->rawImageDataUri($fullPath);
+        }
+
+        return null;
+    }
+
+    private function resolveStoredImagePath(?string $storedPath): ?string
+    {
+        if (!$storedPath) {
+            return null;
+        }
+
+        $cleanPath = trim(str_replace('\\', '/', $storedPath));
+
+        if (preg_match('#^https?://#i', $cleanPath)) {
+            $urlPath = parse_url($cleanPath, PHP_URL_PATH);
+            $cleanPath = is_string($urlPath) ? $urlPath : '';
+        }
+
+        $cleanPath = rawurldecode($cleanPath);
+        $cleanPath = ltrim($cleanPath, '/');
+        $cleanPath = preg_replace('#^(public/|storage/|app/public/)+#i', '', $cleanPath);
+
+        if ($cleanPath === '' || str_contains($cleanPath, '..')) {
+            return null;
+        }
+
         $candidates = [
             storage_path('app/public/' . $cleanPath),
             public_path('storage/' . $cleanPath),
@@ -318,42 +530,27 @@ class AdminController extends Controller
             base_path('public/storage/' . $cleanPath),
             base_path('public_html/storage/' . $cleanPath),
             base_path('public_html/' . $cleanPath),
+            dirname(base_path()) . '/storage/app/public/' . $cleanPath,
+            dirname(base_path()) . '/public_html/storage/' . $cleanPath,
         ];
 
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
-            $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/storage/' . $cleanPath;
-            $candidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/' . $cleanPath;
+            $documentRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/');
+            $candidates[] = $documentRoot . '/storage/' . $cleanPath;
+            $candidates[] = $documentRoot . '/' . $cleanPath;
+            $candidates[] = dirname($documentRoot) . '/storage/app/public/' . $cleanPath;
         }
 
-        $fullPath = null;
-        foreach ($candidates as $candidate) {
-            if ($candidate && @is_file($candidate)) {
-                $fullPath = $candidate;
-                break;
+        foreach (array_unique($candidates) as $candidate) {
+            if ($candidate && @is_file($candidate) && @is_readable($candidate)) {
+                return $candidate;
             }
         }
 
-        if (!$fullPath) {
-            return self::BLANK_PNG_DATA_URI;
-        }
-
-        // 1. Try GD optimization for high quality & tiny PDF size
-        if (extension_loaded('gd') && function_exists('imagecreatefromstring')) {
-            $optimized = $this->optimizedImageDataUri($fullPath, $maxWidth, $maxHeight, $quality);
-            if ($optimized !== null) {
-                return $optimized;
-            }
-        }
-
-        // 2. Fallback: Raw image data URI (supports up to 4MB)
-        if (@filesize($fullPath) <= 4 * 1024 * 1024) {
-            return $this->rawImageDataUri($fullPath);
-        }
-
-        return self::BLANK_PNG_DATA_URI;
+        return null;
     }
 
-    private function optimizedImageDataUri(string $fullPath, int $maxWidth, int $maxHeight, int $quality): ?string
+    private function optimizedImageForPdf(string $fullPath, int $maxWidth, int $maxHeight, int $quality, string $prefix): ?string
     {
         $contents = @file_get_contents($fullPath);
         if ($contents === false) {
@@ -392,7 +589,19 @@ class AdminController extends Controller
             return null;
         }
 
-        return 'data:image/jpeg;base64,' . base64_encode($jpeg);
+        $pdfImageDir = storage_path('app/pdf-images');
+        if (!is_dir($pdfImageDir) && !@mkdir($pdfImageDir, 0755, true)) {
+            return 'data:image/jpeg;base64,' . base64_encode($jpeg);
+        }
+
+        $cacheName = $prefix . '-' . md5($fullPath . '|' . @filemtime($fullPath) . '|' . $maxWidth . 'x' . $maxHeight . '|' . $quality) . '.jpg';
+        $cachePath = $pdfImageDir . DIRECTORY_SEPARATOR . $cacheName;
+
+        if (!@is_file($cachePath) && @file_put_contents($cachePath, $jpeg) === false) {
+            return 'data:image/jpeg;base64,' . base64_encode($jpeg);
+        }
+
+        return str_replace('\\', '/', $cachePath);
     }
 
     private function rawImageDataUri(string $fullPath): string

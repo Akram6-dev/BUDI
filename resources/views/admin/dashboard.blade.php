@@ -389,6 +389,88 @@
             border-color: #ef4444;
         }
 
+        /* Pagination Controls */
+        .pagination-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.875rem 1.25rem;
+            border-top: 1px solid var(--border-main);
+            background: rgba(15, 23, 42, 0.7);
+            flex-wrap: wrap;
+            gap: 0.875rem;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        }
+        .pagination-info {
+            font-size: 0.8125rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .pagination-info strong {
+            color: #e2e8f0;
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .pagination-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 0.625rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-main);
+            background: rgba(30, 41, 59, 0.7);
+            color: #cbd5e1;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(49, 46, 129, 0.8);
+            color: #ffffff;
+            border-color: var(--border-hover);
+        }
+        .pagination-btn.active {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+        .pagination-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .pagination-perpage {
+            padding: 0.35rem 0.65rem;
+            font-size: 0.8125rem;
+            background-color: rgba(30, 41, 59, 0.85);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-md);
+            color: #cbd5e1;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .pagination-perpage:focus {
+            border-color: var(--accent);
+        }
+        @media (max-width: 640px) {
+            .pagination-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            .pagination-controls {
+                justify-content: space-between;
+            }
+        }
+
         /* Modal Backdrop & Dialog */
         .modal-backdrop {
             display: none;
@@ -827,6 +909,299 @@
         [data-theme="light"] .preview-meta-value {
             color: #0f172a;
         }
+
+        @media (max-width: 768px) {
+            .dashboard-layout {
+                overflow-x: hidden;
+            }
+
+            .mrc-navbar {
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.75rem 1rem;
+            }
+
+            .mrc-nav-brand {
+                min-width: 0;
+            }
+
+            .mrc-brand-logo {
+                width: 34px;
+                height: 34px;
+            }
+
+            .mrc-brand-text {
+                min-width: 0;
+            }
+
+            .mrc-brand-title {
+                gap: 0.35rem;
+                flex-wrap: wrap;
+            }
+
+            .mrc-brand-title span:first-child {
+                font-size: 0.95rem;
+            }
+
+            .mrc-brand-badge,
+            .mrc-brand-sub,
+            .theme-btn-text {
+                display: none;
+            }
+
+            .mrc-navbar > div:last-child {
+                justify-content: flex-end;
+                gap: 0.45rem !important;
+                flex-wrap: wrap;
+                max-width: 48%;
+            }
+
+            .theme-btn,
+            .mrc-navbar .btn-mrc {
+                min-width: 40px;
+                height: 40px;
+                padding: 0 !important;
+                justify-content: center;
+            }
+
+            .mrc-navbar form .btn-mrc span {
+                display: none;
+            }
+
+            .mrc-navbar > div:last-child > div {
+                display: none !important;
+            }
+
+            .dashboard-container {
+                width: 100%;
+                max-width: none;
+                padding: 1rem 0.875rem 2.5rem;
+            }
+
+            .page-header {
+                align-items: stretch;
+                margin-bottom: 1rem;
+                gap: 0.875rem;
+            }
+
+            .page-title {
+                font-size: 1.35rem;
+                line-height: 1.2;
+                margin-bottom: 0.25rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.8125rem;
+                line-height: 1.35;
+            }
+
+            .page-header > div:last-child,
+            .page-header .btn-mrc {
+                width: 100%;
+            }
+
+            .page-header > div:last-child {
+                flex-direction: column;
+            }
+
+            .page-header .btn-mrc {
+                justify-content: center;
+                min-height: 44px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .stat-card {
+                border-radius: var(--radius-lg);
+                padding: 0.9rem;
+                min-height: 104px;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+                line-height: 1.25;
+                margin-bottom: 0.4rem;
+            }
+
+            .stat-val {
+                font-size: 1.55rem;
+            }
+
+            .stat-desc {
+                font-size: 0.6875rem;
+                line-height: 1.25;
+            }
+
+            .stat-icon-wrapper {
+                width: 36px;
+                height: 36px;
+            }
+
+            .tabs-header {
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+                padding: 0.25rem;
+                border: 1px solid var(--border-main);
+                border-radius: var(--radius-xl);
+                background: rgba(15, 23, 42, 0.65);
+                overflow-x: auto;
+            }
+
+            .tab-btn {
+                flex: 1 0 auto;
+                justify-content: center;
+                padding: 0.65rem 0.75rem;
+                font-size: 0.8125rem;
+                white-space: nowrap;
+            }
+
+            .toolbar-card {
+                align-items: stretch;
+                padding: 0.875rem;
+                margin-bottom: 1rem;
+                border-radius: var(--radius-lg);
+            }
+
+            .toolbar-left {
+                min-width: 0;
+                width: 100%;
+                gap: 0.65rem;
+            }
+
+            .search-box,
+            .select-filter,
+            #sortToggleBtn {
+                width: 100%;
+                max-width: none;
+                min-width: 0;
+            }
+
+            .search-input,
+            .select-filter,
+            #sortToggleBtn {
+                min-height: 44px;
+            }
+
+            #sortToggleBtn {
+                justify-content: center;
+            }
+
+            .table-card {
+                border-radius: var(--radius-lg);
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .mrc-table {
+                min-width: 720px;
+            }
+
+            .mrc-table th,
+            .mrc-table td {
+                padding: 0.75rem 0.85rem;
+                font-size: 0.8125rem;
+            }
+
+            .btn-table-action {
+                width: 36px;
+                height: 36px;
+            }
+
+            .action-cell {
+                justify-content: flex-end;
+                gap: 0.4rem;
+            }
+
+            .modal-backdrop {
+                align-items: flex-end;
+                padding: 0.75rem;
+            }
+
+            .modal-card {
+                max-width: none;
+                max-height: 88dvh;
+                border-radius: 1rem;
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .modal-body {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .modal-footer {
+                justify-content: stretch;
+            }
+
+            .modal-footer .btn-mrc {
+                flex: 1;
+                justify-content: center;
+                min-height: 42px;
+            }
+
+            .preview-grid {
+                grid-template-columns: 1fr;
+                gap: 0.875rem;
+            }
+
+            .preview-img-container {
+                height: 220px;
+            }
+
+            .preview-sig-container {
+                height: 112px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .dashboard-container {
+                padding-left: 0.7rem;
+                padding-right: 0.7rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                min-height: 92px;
+            }
+
+            .tab-btn span:not(.tab-counter) {
+                font-size: 0.78rem;
+            }
+
+            .mrc-table {
+                min-width: 660px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .mrc-navbar {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .mrc-brand-title span:first-child {
+                font-size: 0.85rem;
+            }
+
+            .theme-btn,
+            .mrc-navbar .btn-mrc {
+                min-width: 36px;
+                height: 36px;
+            }
+        }
     </style>
 </head>
 <body class="dashboard-layout">
@@ -905,6 +1280,15 @@
                         <line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
                     <span>Ekspor Laporan PDF</span>
+                </button>
+                <button type="button" onclick="exportExcel()" class="btn-mrc btn-mrc-outline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <path d="M14 2v6h6"/>
+                        <path d="m8 13 3 3m0-3-3 3"/>
+                        <path d="M14 13h2M14 16h2"/>
+                    </svg>
+                    <span>Ekspor Excel</span>
                 </button>
             </div>
         </div>
@@ -1050,6 +1434,7 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="pagination-footer" id="instansiPagination" style="display: none;"></div>
             </div>
 
             <!-- Sekolah Table -->
@@ -1071,6 +1456,7 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="pagination-footer" id="sekolahPagination" style="display: none;"></div>
             </div>
         </div>
     </main>
@@ -1200,35 +1586,100 @@
             }
         }
 
+        // Data & Pagination State
+        let instansiDataAll = [];
+        let sekolahDataAll = [];
+        let instansiPage = 1;
+        let sekolahPage = 1;
+        let instansiPerPage = 20; // 20, 50, or 'all'
+        let sekolahPerPage = 20;  // 20, 50, or 'all'
+
+        // Centralized API Fetch Handler with Auth & Session Safety
+        async function apiFetch(url, options = {}) {
+            const defaultHeaders = {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            };
+
+            options.headers = {
+                ...defaultHeaders,
+                ...(options.headers || {})
+            };
+
+            let response;
+            try {
+                response = await fetch(url, options);
+            } catch (networkError) {
+                console.warn('Network or connection error:', networkError);
+                throw networkError;
+            }
+
+            // Handle Session Timeout / Unauthorized
+            if (response.status === 401) {
+                alert('Sesi login admin Anda telah berakhir. Anda akan dialihkan ke halaman login.');
+                window.location.href = '/login';
+                throw new Error('Unauthorized');
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await response.text();
+                // Check if server returned login page redirect
+                if (text.includes('admin-login') || text.includes('/login') || text.includes('password')) {
+                    window.location.href = '/login';
+                    throw new Error('Sesi berakhir, mengalihkan ke login...');
+                }
+                throw new Error('Respon server tidak valid. Silakan refresh halaman (F5).');
+            }
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || `Server error (${response.status})`);
+            }
+
+            return await response.json();
+        }
+
         // Load Instansi
         function loadInstansi() {
             const search = document.getElementById('instansi-search').value;
-            fetch(`/api/instansi?search=${encodeURIComponent(search)}&sort=${currentSort}`)
-                .then(r => r.json())
+            apiFetch(`/api/instansi?search=${encodeURIComponent(search)}&sort=${currentSort}`)
                 .then(data => {
                     totalInstansi = data.count;
                     document.getElementById('stat-instansi-count').innerText = data.count;
                     document.getElementById('instansi-tab-count').innerText = data.count;
                     calculateTotalStats(data.data, 'instansi');
-                    renderInstansi(data.data);
+                    instansiDataAll = data.data || [];
+                    instansiPage = 1;
+                    renderInstansi();
                 })
-                .catch(err => console.error('Error loading instansi:', err));
+                .catch(err => {
+                    console.warn('Gagal memuat instansi:', err.message);
+                    const tbody = document.getElementById('instansi-tbody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5; padding: 2rem;">Gagal memuat data. Silakan tekan F5 (Refresh).</td></tr>`;
+                });
         }
 
         // Load Sekolah
         function loadSekolah() {
             const searchNama = document.getElementById('sekolah-search-nama').value;
             const searchSekolah = document.getElementById('sekolah-search-filter').value;
-            fetch(`/api/sekolah?search_nama=${encodeURIComponent(searchNama)}&search_sekolah=${encodeURIComponent(searchSekolah)}&sort=${currentSort}`)
-                .then(r => r.json())
+            apiFetch(`/api/sekolah?search_nama=${encodeURIComponent(searchNama)}&search_sekolah=${encodeURIComponent(searchSekolah)}&sort=${currentSort}`)
                 .then(data => {
                     totalSekolah = data.count;
                     document.getElementById('stat-sekolah-count').innerText = data.count;
                     document.getElementById('sekolah-tab-count').innerText = data.count;
                     calculateTotalStats(data.data, 'sekolah');
-                    renderSekolah(data.data);
+                    sekolahDataAll = data.data || [];
+                    sekolahPage = 1;
+                    renderSekolah();
                 })
-                .catch(err => console.error('Error loading sekolah:', err));
+                .catch(err => {
+                    console.warn('Gagal memuat sekolah:', err.message);
+                    const tbody = document.getElementById('sekolah-tbody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #fca5a5; padding: 2rem;">Gagal memuat data. Silakan tekan F5 (Refresh).</td></tr>`;
+                });
         }
 
         let instansiItemsCache = [];
@@ -1246,13 +1697,12 @@
         }
 
         function loadSchools() {
-            fetch('/api/schools')
-                .then(r => r.json())
+            apiFetch('/api/schools')
                 .then(schools => {
                     const select = document.getElementById('sekolah-search-filter');
                     const currentValue = select.value;
                     select.innerHTML = '<option value="">Semua Asal Sekolah</option>';
-                    schools.forEach(s => {
+                    (schools || []).forEach(s => {
                         const opt = document.createElement('option');
                         opt.value = s;
                         opt.textContent = s;
@@ -1260,19 +1710,41 @@
                         select.appendChild(opt);
                     });
                 })
-                .catch(err => console.error('Error loading schools list:', err));
+                .catch(err => console.warn('Gagal memuat daftar sekolah:', err.message));
         }
 
-        function renderInstansi(data) {
+        function renderInstansi() {
             const tbody = document.getElementById('instansi-tbody');
-            if (!data || data.length === 0) {
+            const totalItems = instansiDataAll.length;
+
+            if (totalItems === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Tidak ada data tamu instansi ditemukan.</td></tr>`;
+                renderPaginationUI('instansi', 0, 1, 1, instansiPerPage);
                 return;
             }
 
-            tbody.innerHTML = data.map(item => `
+            let itemsToDisplay = instansiDataAll;
+            let totalPages = 1;
+
+            if (instansiPerPage !== 'all') {
+                const perPage = parseInt(instansiPerPage, 10);
+                totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+                if (instansiPage > totalPages) instansiPage = totalPages;
+                if (instansiPage < 1) instansiPage = 1;
+
+                const startIndex = (instansiPage - 1) * perPage;
+                const endIndex = startIndex + perPage;
+                itemsToDisplay = instansiDataAll.slice(startIndex, endIndex);
+            }
+
+            tbody.innerHTML = itemsToDisplay.map((item, idx) => {
+                const rowNum = instansiPerPage === 'all'
+                    ? (idx + 1)
+                    : ((instansiPage - 1) * parseInt(instansiPerPage, 10) + idx + 1);
+
+                return `
                 <tr>
-                    <td class="td-num">${item.id}</td>
+                    <td class="td-num">${rowNum}</td>
                     <td class="td-nama">${escapeHtml(item.nama)}</td>
                     <td class="td-instansi">${escapeHtml(item.instansi || '-')}</td>
                     <td>${getUlasanBadge(item.ulasan)}</td>
@@ -1291,19 +1763,43 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
+
+            renderPaginationUI('instansi', totalItems, totalPages, instansiPage, instansiPerPage);
         }
 
-        function renderSekolah(data) {
+        function renderSekolah() {
             const tbody = document.getElementById('sekolah-tbody');
-            if (!data || data.length === 0) {
+            const totalItems = sekolahDataAll.length;
+
+            if (totalItems === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Tidak ada data tamu sekolah ditemukan.</td></tr>`;
+                renderPaginationUI('sekolah', 0, 1, 1, sekolahPerPage);
                 return;
             }
 
-            tbody.innerHTML = data.map(item => `
+            let itemsToDisplay = sekolahDataAll;
+            let totalPages = 1;
+
+            if (sekolahPerPage !== 'all') {
+                const perPage = parseInt(sekolahPerPage, 10);
+                totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+                if (sekolahPage > totalPages) sekolahPage = totalPages;
+                if (sekolahPage < 1) sekolahPage = 1;
+
+                const startIndex = (sekolahPage - 1) * perPage;
+                const endIndex = startIndex + perPage;
+                itemsToDisplay = sekolahDataAll.slice(startIndex, endIndex);
+            }
+
+            tbody.innerHTML = itemsToDisplay.map((item, idx) => {
+                const rowNum = sekolahPerPage === 'all'
+                    ? (idx + 1)
+                    : ((sekolahPage - 1) * parseInt(sekolahPerPage, 10) + idx + 1);
+
+                return `
                 <tr>
-                    <td class="td-num">${item.id}</td>
+                    <td class="td-num">${rowNum}</td>
                     <td class="td-nama">${escapeHtml(item.nama)}</td>
                     <td class="td-instansi">${escapeHtml(item.asal_sekolah || '-')}</td>
                     <td>${getUlasanBadge(item.ulasan)}</td>
@@ -1322,7 +1818,107 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
+
+            renderPaginationUI('sekolah', totalItems, totalPages, sekolahPage, sekolahPerPage);
+        }
+
+        // Pagination UI Renderer & Handler
+        function renderPaginationUI(tab, totalItems, totalPages, currentPage, currentPerPage) {
+            const container = document.getElementById(`${tab}Pagination`);
+            if (!container) return;
+
+            if (totalItems === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'flex';
+
+            let startItem = 1;
+            let endItem = totalItems;
+            if (currentPerPage !== 'all') {
+                const pp = parseInt(currentPerPage, 10);
+                startItem = (currentPage - 1) * pp + 1;
+                endItem = Math.min(currentPage * pp, totalItems);
+            }
+
+            let pagesHtml = '';
+            if (currentPerPage !== 'all' && totalPages > 1) {
+                pagesHtml += `
+                    <button type="button" class="pagination-btn" onclick="changePage('${tab}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Halaman Sebelumnya">
+                        &larr; Prev
+                    </button>
+                `;
+
+                const range = [];
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                        range.push(i);
+                    } else if (range[range.length - 1] !== '...') {
+                        range.push('...');
+                    }
+                }
+
+                range.forEach(p => {
+                    if (p === '...') {
+                        pagesHtml += `<span style="color: #64748b; padding: 0 4px; font-weight: bold;">...</span>`;
+                    } else {
+                        pagesHtml += `
+                            <button type="button" class="pagination-btn ${p === currentPage ? 'active' : ''}" onclick="changePage('${tab}', ${p})">
+                                ${p}
+                            </button>
+                        `;
+                    }
+                });
+
+                pagesHtml += `
+                    <button type="button" class="pagination-btn" onclick="changePage('${tab}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Halaman Selanjutnya">
+                        Next &rarr;
+                    </button>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="pagination-info">
+                    Menampilkan <strong>${startItem}–${endItem}</strong> dari <strong>${totalItems}</strong> data
+                </div>
+                <div class="pagination-controls">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.8125rem; color: #94a3b8;">Tampilkan:</span>
+                        <select class="pagination-perpage" onchange="changePerPage('${tab}', this.value)">
+                            <option value="20" ${currentPerPage == 20 ? 'selected' : ''}>20 data</option>
+                            <option value="50" ${currentPerPage == 50 ? 'selected' : ''}>50 data</option>
+                            <option value="all" ${currentPerPage === 'all' ? 'selected' : ''}>Tampilkan Semua</option>
+                        </select>
+                    </div>
+                    <div class="pagination-pages" style="display: flex; align-items: center; gap: 0.35rem;">
+                        ${pagesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function changePage(tab, newPage) {
+            if (tab === 'instansi') {
+                instansiPage = newPage;
+                renderInstansi();
+            } else {
+                sekolahPage = newPage;
+                renderSekolah();
+            }
+        }
+
+        function changePerPage(tab, val) {
+            if (tab === 'instansi') {
+                instansiPerPage = val === 'all' ? 'all' : parseInt(val, 10);
+                instansiPage = 1;
+                renderInstansi();
+            } else {
+                sekolahPerPage = val === 'all' ? 'all' : parseInt(val, 10);
+                sekolahPage = 1;
+                renderSekolah();
+            }
         }
 
         function escapeHtml(text) {
@@ -1358,8 +1954,7 @@
 
         // Modals
         function openPreview(id) {
-            fetch(`/api/data/${id}`)
-                .then(r => r.json())
+            apiFetch(`/api/data/${id}`)
                 .then(data => {
                     const fotoUrl = formatMediaUrl(data.foto);
                     const ttdUrl  = formatMediaUrl(data.tanda_tangan);
@@ -1421,7 +2016,8 @@
                     `;
 
                     document.getElementById('previewModal').classList.add('show');
-                });
+                })
+                .catch(err => alert('Gagal memuat detail pengunjung: ' + err.message));
         }
 
         function closePreviewModal() {
@@ -1429,8 +2025,7 @@
         }
 
         function openEdit(id) {
-            fetch(`/api/data/${id}`)
-                .then(r => r.json())
+            apiFetch(`/api/data/${id}`)
                 .then(data => {
                     document.getElementById('editId').value = id;
                     document.getElementById('editNama').value = data.nama;
@@ -1443,7 +2038,8 @@
                     document.getElementById('editUlasan').value = ulasanVal;
                     toggleEditFields();
                     document.getElementById('editModal').classList.add('show');
-                });
+                })
+                .catch(err => alert('Gagal memuat data edit: ' + err.message));
         }
 
         function closeEditModal() {
@@ -1475,15 +2071,10 @@
                 ulasan: document.getElementById('editUlasan').value
             };
 
-            fetch(`/api/data/${id}`, {
+            apiFetch(`/api/data/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
                 body: JSON.stringify(payload)
             })
-            .then(r => r.json())
             .then(res => {
                 if (res.success) {
                     closeEditModal();
@@ -1498,13 +2089,9 @@
         function deleteData(id) {
             if (!confirm('Apakah Anda yakin ingin menghapus data pengunjung ini?')) return;
 
-            fetch(`/api/data/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                }
+            apiFetch(`/api/data/${id}`, {
+                method: 'DELETE'
             })
-            .then(r => r.json())
             .then(res => {
                 if (res.success) {
                     loadInstansi();
@@ -1515,7 +2102,7 @@
             .catch(err => alert('Gagal menghapus data: ' + err.message));
         }
 
-        function exportData() {
+        function getExportParams() {
             const params = new URLSearchParams();
             params.set('section', currentSection);
             if (currentSection === 'instansi') {
@@ -1529,7 +2116,17 @@
             }
             if (currentSort) params.set('sort', currentSort);
 
+            return params;
+        }
+
+        function exportData() {
+            const params = getExportParams();
             window.location.href = `/admin/export-pdf?${params.toString()}`;
+        }
+
+        function exportExcel() {
+            const params = getExportParams();
+            window.location.href = `/admin/export-excel?${params.toString()}`;
         }
 
         // Theme switcher logic
@@ -1619,4 +2216,3 @@
 
 </body>
 </html>
-
