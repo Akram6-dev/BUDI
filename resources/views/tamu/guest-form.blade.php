@@ -162,8 +162,13 @@
             border-color: #090a0f !important;
             box-shadow: 0 0 0 3px rgba(9, 10, 15, 0.06) !important;
         }
-        [data-theme="light"] .field-input::placeholder { color: #94a3b8 !important; }
+        [data-theme="light"] .field-input::placeholder { color: #64748b !important; font-size: 0.98rem !important; opacity: 0.9 !important; }
         [data-theme="light"] .field-wrap:focus-within .field-icon { color: #090a0f; }
+        [data-theme="light"] .field-wrap .field-icon + .field-input,
+        [data-theme="light"] #inputInstansi,
+        [data-theme="light"] #inputSekolah {
+            padding-left: 2.9rem !important;
+        }
 
         [data-theme="light"] .status-btn {
             background: #ffffff;
@@ -568,7 +573,7 @@
         ═══════════════════════════════════════════ */
         .glass-card {
             width: 100%;
-            max-width: clamp(300px, 92vw, 560px);
+            max-width: clamp(300px, 94vw, 700px);
             background: transparent;
             border: none;
             border-radius: 0;
@@ -595,7 +600,7 @@
         }
         .card-title-icon { display: none; }
         .card-sub {
-            font-size: clamp(0.66rem, 0.78vw, 0.75rem);
+            font-size: clamp(0.85rem, 1vw, 0.95rem);
             color: var(--text-m);
             margin-top: 0.45rem;
             font-weight: 500;
@@ -615,13 +620,13 @@
         .field {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.45rem;
         }
         .field-lbl {
             display: flex;
             align-items: center;
-            gap: 0.45rem;
-            font-size: clamp(0.95rem, 1.3vh, 1.05rem);
+            gap: 0.65rem;
+            font-size: clamp(1.2rem, 1.9vh, 1.45rem);
             font-weight: 700;
             letter-spacing: -0.01em;
             color: var(--text);
@@ -630,35 +635,37 @@
         .field-lbl svg {
             color: var(--indigo-l);
             flex-shrink: 0;
-            width: 18px;
-            height: 18px;
+            width: 24px;
+            height: 24px;
         }
         .field-wrap { position: relative; }
         .field-icon {
-            position: absolute; left: 0.75rem; top: 50%;
+            position: absolute; left: 0.95rem; top: 50%;
             transform: translateY(-50%); pointer-events: none;
             color: var(--indigo-l);
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
         }
         .field-input {
             width: 100%;
-            padding: 0.38rem 0.85rem;
-            font-size: 0.76rem;
+            padding: 0.65rem 1rem;
+            font-size: 0.98rem;
             font-weight: 400; font-family: var(--font);
             color: var(--text);
             background: rgba(15,23,42,0.7);
             border: 1.5px solid var(--border-b);
-            border-radius: 0.45rem;
-            min-height: 38px;
+            border-radius: 0.55rem;
+            min-height: 48px;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
             box-sizing: border-box;
         }
-        .field-wrap .field-icon + .field-input {
-            padding-left: 1.95rem;
+        .field-wrap .field-icon + .field-input,
+        #inputInstansi,
+        #inputSekolah {
+            padding-left: 2.9rem !important;
         }
-        .field-input::placeholder { color: var(--text-s); font-weight: 400; font-size: 0.74rem; opacity: 0.7; }
+        .field-input::placeholder { color: var(--text-s); font-weight: 400; font-size: 0.98rem; opacity: 0.9; }
         .field-input:focus {
             border-color: var(--border-f);
             background: rgba(15,23,42,0.9);
@@ -727,12 +734,12 @@
         html[data-theme="light"] .sbt-svg-light { display: inline-block !important; }
 
         .sbt-name {
-            font-size: clamp(0.72rem, 0.92vh, 0.8rem);
+            font-size: clamp(0.88rem, 1.1vh, 0.98rem);
             font-weight: 700; letter-spacing: -0.01em;
             color: var(--text);
         }
         .sbt-desc {
-            font-size: clamp(0.57rem, 0.74vh, 0.64rem);
+            font-size: clamp(0.72rem, 0.9vh, 0.82rem);
             color: var(--text-m); font-weight: 500;
         }
 
@@ -750,15 +757,15 @@
         .status-pill:hover { background: rgba(79,70,229,0.25); }
         .status-pill-left {
             display: flex; align-items: center; gap: 0.5rem;
-            font-size: clamp(0.68rem, 0.85vh, 0.76rem);
+            font-size: clamp(0.9rem, 1.15vh, 1.05rem);
             font-weight: 700; color: #c7d2fe;
         }
-        .status-pill-emoji { font-size: 0.88rem; }
+        .status-pill-emoji { font-size: 1rem; }
         .status-pill-change {
             display: inline-flex; align-items: center; gap: 0.25rem;
-            font-size: clamp(0.6rem, 0.75vh, 0.66rem);
+            font-size: clamp(0.78rem, 0.95vh, 0.88rem);
             font-weight: 600; color: var(--text-m);
-            padding: 0.15rem 0.5rem;
+            padding: 0.25rem 0.65rem;
             border-radius: var(--radius-p);
             background: rgba(15,23,42,0.6);
             border: 1px solid var(--border-b);
@@ -851,8 +858,8 @@
             gap: clamp(0.5rem, 1vh, 0.72rem);
         }
         .rating-q {
-            font-size: clamp(0.82rem, 1.05vh, 0.92rem);
-            font-weight: 600; color: var(--text);
+            font-size: clamp(0.98rem, 1.35vh, 1.15rem);
+            font-weight: 700; color: var(--text);
             text-align: center;
             line-height: 1.3; letter-spacing: -0.01em;
         }
@@ -1354,35 +1361,93 @@
             .card-title {
                 font-size: clamp(1.4rem, 6.2vw, 1.75rem);
             }
+            .card-sub {
+                font-size: 0.85rem;
+            }
+            .field-lbl {
+                font-size: 1.08rem;
+                font-weight: 700;
+            }
+            .field-lbl svg {
+                width: 18px;
+                height: 18px;
+            }
+            .field-input {
+                padding: 0.55rem 0.9rem;
+                font-size: 0.95rem;
+                min-height: 44px;
+                border-radius: 0.5rem;
+            }
+            .field-input::placeholder {
+                font-size: 0.95rem;
+                opacity: 0.9;
+            }
+            .field-icon {
+                width: 15px;
+                height: 15px;
+                left: 0.85rem;
+            }
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 2.8rem !important;
+            }
             .status-big-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 0.5rem;
             }
+            .status-btn {
+                padding: 0.6rem 0.75rem;
+                min-height: 56px;
+                border-radius: 0.5rem;
+            }
             .sbt-name {
-                font-size: 0.78rem;
+                font-size: 0.92rem;
             }
             .sbt-desc {
-                font-size: 0.62rem;
+                font-size: 0.75rem;
             }
             .media-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 0.5rem;
             }
+            .trigger-btn {
+                padding: 0.65rem 0.75rem;
+                min-height: 58px;
+                border-radius: 0.5rem;
+            }
+            .trigger-lbl {
+                font-size: 0.85rem;
+            }
+            .rating-section {
+                gap: 0.45rem;
+            }
+            .rating-q {
+                font-size: 0.88rem;
+            }
             .rating-bar {
-                gap: 0;
+                border-radius: 0.5rem;
             }
             .rating-opt {
-                padding: 0.5rem 0.25rem;
+                min-height: 42px;
+                padding: 0.35rem 0.45rem;
                 font-size: 0.68rem;
             }
             .rating-opt .r-emoji {
                 font-size: 1.15rem;
             }
+            .btn-submit {
+                font-size: 0.92rem;
+                min-height: 44px;
+                border-radius: 0.55rem;
+                padding: 0.65rem 1.5rem;
+            }
             .footer {
-                padding: 0.5rem 0.75rem;
+                padding: 0.35rem 0.8rem;
+                gap: 0.5rem;
             }
             .footer span {
-                font-size: 0.65rem;
+                font-size: 0.68rem;
                 line-height: 1.4;
             }
         }
@@ -1390,16 +1455,38 @@
         /* ─── Very Small Mobile (<= 360px) ─── */
         @media (max-width: 360px) {
             .navbar {
-                padding: 0 0.5rem;
+                padding: 0 0.75rem;
             }
+            .nav-logos { gap: 0.35rem; }
+            .nav-logo-img { height: 26px; }
             .nav-school {
                 display: none;
             }
             .theme-btn span, .nav-home span {
                 font-size: 0.72rem;
             }
+            .stage {
+                padding: 0.4rem 0.6rem;
+            }
+            .glass-card {
+                gap: 0.65rem;
+            }
+            .card-title {
+                font-size: 1.45rem;
+            }
+            .form-stack {
+                gap: 0.7rem;
+            }
+            .field-lbl {
+                font-size: 1.02rem;
+            }
+            .field-input {
+                font-size: 0.9rem;
+                min-height: 42px;
+            }
             .status-btn {
                 padding: 0.5rem 0.45rem;
+                min-height: 50px;
             }
             .sbt-desc {
                 font-size: 0.58rem;
@@ -1412,12 +1499,25 @@
         }
 
         /* ─── Phablets & Small Tablets (>= 640px) ─── */
-        @media (min-width: 640px) {
+        @media (min-width: 640px) and (max-width: 767px) {
             .glass-card {
-                max-width: 480px;
+                max-width: 580px;
             }
             .navbar {
                 padding: 0 1.5rem;
+            }
+            .field-lbl {
+                font-size: 1.32rem;
+                font-weight: 700;
+                gap: 0.6rem;
+            }
+            .field-lbl svg {
+                width: 24px;
+                height: 24px;
+            }
+            .rating-q {
+                font-size: 1.25rem;
+                font-weight: 700;
             }
             .status-big-grid {
                 grid-template-columns: 1fr 1fr;
@@ -1434,50 +1534,66 @@
             .navbar {
                 padding: 0 1.75rem;
             }
-            .nav-logos { gap: 0.45rem; }
-            .nav-logo-img { height: 32px; }
+            .nav-logos { gap: 0.5rem; }
+            .nav-logo-img { height: 34px; }
             .nav-logo-divider { height: 20px; }
-            .nav-name { font-size: 1.2rem; }
-            .nav-school { font-size: 0.75rem; }
+            .nav-name { font-size: 1.25rem; }
+            .nav-school { font-size: 0.82rem; }
             .nav-text { display: inline !important; }
-            .theme-btn, .nav-home { padding: 0.45rem 1rem; min-height: 44px; font-size: 0.85rem; }
-            .stage { padding: 1.5rem 1.75rem; }
+            .theme-btn, .nav-home { padding: 0.5rem 1.1rem; min-height: 44px; font-size: 0.88rem; }
+            .stage { padding: 1.75rem 2rem; }
             .glass-card {
-                max-width: clamp(580px, 84vw, 680px);
-                gap: 1.85rem;
+                max-width: 700px;
+                gap: 1.4rem;
             }
             .card-title { font-size: 2.2rem; }
-            .card-sub { font-size: 0.95rem; margin-top: 0.45rem; }
-            .form-stack { gap: 1.5rem; }
-            .field { gap: 0.65rem; }
-            .field-lbl { font-size: 1.05rem; }
-            .field-lbl svg { width: 17px; height: 17px; }
+            .card-sub { font-size: 1.02rem; margin-top: 0.45rem; }
+            .form-stack { gap: 1.3rem; }
+            .field { gap: 0.55rem; }
+            .field-lbl { font-size: 1.45rem; font-weight: 700; gap: 0.65rem; }
+            .field-lbl svg { width: 26px; height: 26px; }
             .field-input {
-                padding: 0.82rem 1.2rem;
-                font-size: 0.98rem;
+                padding: 0.72rem 1.2rem;
+                font-size: 1.05rem;
                 min-height: 52px;
+                border-radius: 0.65rem;
+            }
+            .field-input::placeholder {
+                font-size: 1.05rem;
+                opacity: 0.9;
+            }
+            .field-icon {
+                width: 18px;
+                height: 18px;
+                left: 1.05rem;
+            }
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 3.15rem !important;
             }
             .status-big-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .status-btn { padding: 1rem 1.25rem; min-height: 76px; gap: 0.55rem; }
-            .sbt-icon { width: 38px; height: 38px; }
-            .sbt-svg { width: 20px; height: 20px; }
-            .sbt-name { font-size: 1.05rem; }
-            .sbt-desc { font-size: 0.82rem; }
-            .status-pill { padding: 0.65rem 1.2rem; font-size: 0.92rem; }
-            .status-pill-change { font-size: 0.82rem; padding: 0.3rem 0.75rem; }
+            .status-btn { padding: 0.9rem 1.25rem; min-height: 72px; gap: 0.6rem; border-radius: 0.75rem; }
+            .sbt-icon { width: 42px; height: 42px; }
+            .sbt-svg { width: 24px; height: 24px; }
+            .sbt-name { font-size: 1.08rem; }
+            .sbt-desc { font-size: 0.88rem; }
+            .status-pill { padding: 0.75rem 1.35rem; font-size: 1.1rem; }
+            .status-pill-change { font-size: 0.9rem; padding: 0.35rem 0.85rem; }
             .media-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .trigger-btn { padding: 1.1rem 1.25rem; min-height: 84px; gap: 0.55rem; }
+            .trigger-btn { padding: 0.95rem 1.25rem; min-height: 80px; gap: 0.65rem; border-radius: 0.75rem; }
             .trigger-icon svg { width: 26px; height: 26px; }
-            .trigger-lbl { font-size: 0.98rem; }
-            .rating-section { gap: 0.85rem; }
-            .rating-q { font-size: 1.08rem; }
-            .rating-opt { padding: 0.85rem 1rem; min-height: 68px; gap: 0.45rem; }
-            .rating-opt .r-emoji { font-size: 1.85rem; }
-            .rating-opt span:last-child { font-size: 0.95rem; font-weight: 700; }
-            .btn-submit { min-height: 56px; padding: 0.95rem 2rem; font-size: 1.08rem; }
-            #submitIcon { width: 20px; height: 20px; }
-            .modal-win { max-width: 540px; }
-            .footer span { font-size: 0.78rem; }
+            .trigger-lbl { font-size: 1.1rem; font-weight: 700; }
+            .rating-section { gap: 0.9rem; }
+            .rating-q { font-size: 1.38rem; font-weight: 700; }
+            .rating-bar { gap: 0.75rem; border-radius: 0.8rem; }
+            .rating-opt { padding: 0.75rem 1rem; min-height: 64px; gap: 0.4rem; }
+            .rating-opt .r-emoji { font-size: 1.6rem; }
+            .rating-opt span:last-child { font-size: 0.98rem; font-weight: 700; }
+            .btn-submit { min-height: 52px; padding: 0.9rem 2.2rem; font-size: 1.08rem; border-radius: 0.75rem; }
+            #submitIcon { width: 22px; height: 22px; }
+            .modal-win { max-width: 640px; }
+            .footer span { font-size: 0.85rem; }
         }
 
         /* ─── Large & Pro Tablets (iPad Pro 1032x1376, Surface Pro 960x1440: tall portrait tablets ONLY) ─── */
@@ -1486,141 +1602,154 @@
                 padding: 0 clamp(2rem, 3.5vw, 3.5rem);
             }
             .nav-logos { gap: 0.65rem; }
-            .nav-logo-img { height: 42px; }
-            .nav-logo-divider { height: 26px; }
-            .nav-name { font-size: 1.4rem; }
-            .nav-school { font-size: 0.88rem; }
+            .nav-logo-img { height: 40px; }
+            .nav-logo-divider { height: 24px; }
+            .nav-name { font-size: 1.35rem; }
+            .nav-school { font-size: 0.9rem; }
             .nav-text { display: inline !important; }
             .theme-btn, .nav-home {
-                padding: 0.55rem 1.35rem;
-                min-height: 48px;
+                padding: 0.55rem 1.3rem;
+                min-height: 46px;
                 font-size: 0.95rem;
             }
             .stage {
-                padding: clamp(2.5rem, 4.5vh, 4rem) 2.5rem;
+                padding: clamp(2rem, 3.5vh, 3.5rem) 2.5rem;
             }
             .glass-card {
-                max-width: clamp(780px, 86vw, 920px);
-                gap: clamp(2.2rem, 3.5vh, 3.2rem);
+                max-width: 780px;
+                gap: 1.55rem;
             }
             .card-title {
-                font-size: clamp(2.5rem, 4.5vw, 3.1rem);
+                font-size: 2.35rem;
             }
             .card-sub {
-                font-size: 1.18rem;
-                margin-top: 0.75rem;
+                font-size: 1.08rem;
+                margin-top: 0.45rem;
             }
             .form-stack {
-                gap: clamp(1.8rem, 3vh, 2.5rem);
-            }
-            .field {
-                gap: 0.85rem;
-            }
-            .field-lbl {
-                font-size: 1.22rem;
-            }
-            .field-lbl svg {
-                width: 22px;
-                height: 22px;
-            }
-            .field-input {
-                padding: 1.1rem 1.45rem;
-                font-size: 1.16rem;
-                min-height: 62px;
-                border-radius: 0.85rem;
-            }
-            .field-icon {
-                width: 24px;
-                height: 24px;
-                left: 1.35rem;
-            }
-            .status-big-grid {
-                grid-template-columns: 1fr 1fr;
                 gap: 1.35rem;
             }
-            .status-btn {
-                padding: 1.35rem 1.6rem;
-                min-height: 98px;
-                gap: 0.85rem;
-                border-radius: 0.95rem;
+            .field {
+                gap: 0.55rem;
             }
-            .sbt-icon {
-                width: 50px;
-                height: 50px;
-                border-radius: 0.75rem;
+            .field-lbl {
+                font-size: 1.55rem;
+                font-weight: 700;
+                gap: 0.75rem;
             }
-            .sbt-svg {
+            .field-lbl svg {
                 width: 28px;
                 height: 28px;
             }
+            .field-input {
+                padding: 0.75rem 1.3rem;
+                font-size: 1.08rem;
+                min-height: 54px;
+                border-radius: 0.7rem;
+            }
+            .field-input::placeholder {
+                font-size: 1.08rem;
+                opacity: 0.9;
+            }
+            .field-icon {
+                width: 19px;
+                height: 19px;
+                left: 1.1rem;
+            }
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 3.25rem !important;
+            }
+            .status-big-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1.1rem;
+            }
+            .status-btn {
+                padding: 0.95rem 1.35rem;
+                min-height: 76px;
+                gap: 0.65rem;
+                border-radius: 0.8rem;
+            }
+            .sbt-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 0.6rem;
+            }
+            .sbt-svg {
+                width: 24px;
+                height: 24px;
+            }
             .sbt-name {
-                font-size: 1.25rem;
+                font-size: 1.1rem;
             }
             .sbt-desc {
-                font-size: 0.98rem;
+                font-size: 0.9rem;
             }
             .status-pill {
-                padding: 0.95rem 1.5rem;
+                padding: 0.75rem 1.4rem;
                 font-size: 1.12rem;
             }
             .status-pill-change {
-                font-size: 0.95rem;
-                padding: 0.4rem 0.95rem;
+                font-size: 0.9rem;
+                padding: 0.35rem 0.85rem;
             }
             .media-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 1.35rem;
+                gap: 1.1rem;
             }
             .trigger-btn {
-                padding: 1.4rem 1.6rem;
-                min-height: 104px;
-                gap: 0.85rem;
-                border-radius: 0.95rem;
+                padding: 1rem 1.35rem;
+                min-height: 86px;
+                gap: 0.7rem;
+                border-radius: 0.8rem;
             }
             .trigger-icon svg {
-                width: 32px;
-                height: 32px;
+                width: 28px;
+                height: 28px;
             }
             .trigger-lbl {
-                font-size: 1.2rem;
+                font-size: 1.15rem;
                 font-weight: 700;
             }
             .rating-section {
-                gap: 1.15rem;
+                gap: 1rem;
             }
             .rating-q {
-                font-size: 1.28rem;
+                font-size: 1.45rem;
+                font-weight: 700;
             }
             .rating-bar {
-                border-radius: 1rem;
+                gap: 0.85rem;
+                border-radius: 0.85rem;
             }
             .rating-opt {
-                padding: 1.2rem 1.35rem;
-                min-height: 86px;
-                gap: 0.55rem;
+                padding: 0.85rem 1.1rem;
+                min-height: 70px;
+                gap: 0.45rem;
             }
             .rating-opt .r-emoji {
-                font-size: 2.45rem;
+                font-size: 1.75rem;
             }
             .rating-opt span:last-child {
-                font-size: 1.12rem;
+                font-size: 1.02rem;
                 font-weight: 700;
             }
             .btn-submit {
-                min-height: 68px;
-                padding: 1.2rem 2.75rem;
-                font-size: 1.25rem;
-                border-radius: 0.95rem;
+                min-height: 56px;
+                padding: 0.95rem 2.4rem;
+                font-size: 1.12rem;
+                border-radius: 0.8rem;
             }
             #submitIcon {
-                width: 26px;
-                height: 26px;
+                width: 24px;
+                height: 24px;
             }
             .modal-win {
-                max-width: 650px;
+                max-width: 680px;
             }
             .footer span {
-                font-size: 0.92rem;
+                font-size: 0.9rem;
             }
         }
 
@@ -1643,7 +1772,7 @@
                 height: 15px;
             }
             .glass-card {
-                max-width: 580px;
+                max-width: 640px;
                 gap: clamp(1rem, 2.2vh, 1.45rem);
             }
             .stage {
@@ -1654,37 +1783,39 @@
                 font-size: 1.95rem;
             }
             .card-sub {
-                font-size: 0.82rem;
+                font-size: 0.92rem;
                 margin-top: 0.35rem;
             }
             .field {
                 gap: 0.45rem;
             }
             .field-lbl {
-                font-size: 1.05rem;
+                font-size: 1.16rem;
                 font-weight: 700;
             }
             .field-lbl svg {
-                width: 18px;
-                height: 18px;
+                width: 20px;
+                height: 20px;
             }
             .field-input {
-                padding: 0.38rem 0.85rem;
-                font-size: 0.76rem;
-                min-height: 38px;
-                border-radius: 0.45rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.98rem;
+                min-height: 46px;
+                border-radius: 0.55rem;
             }
             .field-input::placeholder {
-                font-size: 0.74rem;
-                opacity: 0.7;
+                font-size: 0.98rem;
+                opacity: 0.9;
             }
             .field-icon {
-                width: 14px;
-                height: 14px;
-                left: 0.75rem;
+                width: 16px;
+                height: 16px;
+                left: 0.95rem;
             }
-            .field-wrap .field-icon + .field-input {
-                padding-left: 1.95rem;
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 2.9rem !important;
             }
             .status-big-grid {
                 grid-template-columns: 1fr 1fr;
@@ -1706,10 +1837,10 @@
                 height: 20px;
             }
             .sbt-name {
-                font-size: 0.92rem;
+                font-size: 0.95rem;
             }
             .sbt-desc {
-                font-size: 0.75rem;
+                font-size: 0.8rem;
             }
             .media-grid {
                 grid-template-columns: 1fr 1fr;
@@ -1726,13 +1857,13 @@
                 height: 24px;
             }
             .trigger-lbl {
-                font-size: 0.92rem;
+                font-size: 0.95rem;
             }
             .rating-section {
                 gap: 0.7rem;
             }
             .rating-q {
-                font-size: 1.05rem;
+                font-size: 1.15rem;
             }
             .rating-opt {
                 padding: 0.65rem 0.85rem;
@@ -1743,11 +1874,11 @@
                 font-size: 1.45rem;
             }
             .rating-opt span:last-child {
-                font-size: 0.85rem;
+                font-size: 0.92rem;
             }
             .btn-submit {
-                min-height: 50px;
-                font-size: 0.95rem;
+                min-height: 48px;
+                font-size: 1rem;
                 padding: 0.8rem 2rem;
                 border-radius: 0.65rem;
             }
@@ -1756,7 +1887,7 @@
                 height: 20px;
             }
             .footer span {
-                font-size: 0.78rem;
+                font-size: 0.8rem;
             }
         }
 
@@ -1773,121 +1904,188 @@
         /* ─── Standard Desktop / Wide (>= 1280px and height > 950px) ─── */
         @media (min-width: 1280px) and (min-height: 951px) {
             .glass-card {
-                max-width: 640px;
-                gap: 2rem;
+                max-width: 680px;
+                gap: 1.45rem;
             }
             .card-title {
-                font-size: 2.3rem;
+                font-size: 2rem;
+            }
+            .card-sub {
+                font-size: 0.95rem;
+            }
+            .field {
+                gap: 0.45rem;
             }
             .field-lbl {
-                font-size: 1.05rem;
+                font-size: 1.18rem;
+                font-weight: 700;
+            }
+            .field-lbl svg {
+                width: 21px;
+                height: 21px;
             }
             .field-input {
-                font-size: 0.95rem;
-                min-height: 54px;
+                padding: 0.65rem 1.15rem;
+                font-size: 1rem;
+                min-height: 48px;
+                border-radius: 0.6rem;
+            }
+            .field-input::placeholder {
+                font-size: 1rem;
+                opacity: 0.9;
+            }
+            .field-icon {
+                width: 16px;
+                height: 16px;
+                left: 0.95rem;
+            }
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 2.95rem !important;
             }
             .status-btn {
-                min-height: 74px;
+                padding: 0.75rem 1rem;
+                min-height: 64px;
+                gap: 0.55rem;
+                border-radius: 0.65rem;
             }
+            .sbt-name { font-size: 0.95rem; }
+            .sbt-desc { font-size: 0.8rem; }
             .trigger-btn {
-                min-height: 80px;
+                padding: 0.8rem 1rem;
+                min-height: 72px;
+                gap: 0.55rem;
+                border-radius: 0.65rem;
             }
+            .trigger-lbl { font-size: 0.95rem; }
+            .rating-q { font-size: 1.18rem; }
+            .rating-opt {
+                padding: 0.65rem 0.85rem;
+                min-height: 56px;
+                gap: 0.35rem;
+            }
+            .rating-opt .r-emoji { font-size: 1.45rem; }
+            .rating-opt span:last-child { font-size: 0.92rem; }
             .btn-submit {
-                min-height: 58px;
-                font-size: 1.05rem;
+                min-height: 48px;
+                font-size: 1rem;
+                padding: 0.8rem 2rem;
+                border-radius: 0.65rem;
             }
         }
 
-        /* ─── Ultra-wide Desktop (>= 1920px) ─── */
         /* ─── Ultra-wide Desktop & TV Displays (>= 1920px) ─── */
         @media (min-width: 1920px) {
             .navbar {
-                padding: 0 4rem;
+                padding: 0 2.5rem;
             }
             .glass-card {
-                max-width: 720px;
-                gap: 2.2rem;
+                max-width: 800px;
+                gap: 1.5rem;
             }
             .nav-name {
-                font-size: 1.5rem;
+                font-size: 1.35rem;
             }
             .nav-school {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
             .card-title {
-                font-size: 2.5rem;
+                font-size: 2.1rem;
             }
             .card-sub {
-                font-size: 1.15rem;
+                font-size: 0.98rem;
+            }
+            .field {
+                gap: 0.45rem;
             }
             .field-lbl {
-                font-size: 1.18rem;
+                font-size: 1.28rem;
+                font-weight: 700;
             }
             .field-lbl svg {
+                width: 24px;
+                height: 24px;
+            }
+            .field-input {
+                padding: 0.75rem 1.25rem;
+                font-size: 1.05rem;
+                min-height: 52px;
+                border-radius: 0.65rem;
+            }
+            .field-input::placeholder {
+                font-size: 1.05rem;
+                opacity: 0.9;
+            }
+            .field-icon {
+                width: 17px;
+                height: 17px;
+                left: 1rem;
+            }
+            .field-wrap .field-icon + .field-input,
+            #inputInstansi,
+            #inputSekolah {
+                padding-left: 3.1rem !important;
+            }
+            .status-big-grid {
+                gap: 0.85rem;
+            }
+            .status-btn {
+                padding: 0.75rem 1rem;
+                min-height: 64px;
+                gap: 0.55rem;
+                border-radius: 0.65rem;
+            }
+            .sbt-icon {
+                width: 36px;
+                height: 36px;
+            }
+            .sbt-svg {
                 width: 20px;
                 height: 20px;
             }
-            .field-input {
-                font-size: 1.08rem;
-                padding: 1rem 1.35rem;
-                min-height: 60px;
-            }
-            .status-big-grid {
-                gap: 1.25rem;
-            }
-            .status-btn {
-                padding: 1.2rem 1.45rem;
-                min-height: 88px;
-                gap: 0.75rem;
-            }
-            .sbt-icon {
-                width: 46px;
-                height: 46px;
-            }
-            .sbt-svg {
-                width: 26px;
-                height: 26px;
-            }
             .sbt-name {
-                font-size: 1.18rem;
+                font-size: 0.98rem;
             }
             .sbt-desc {
-                font-size: 0.92rem;
+                font-size: 0.82rem;
             }
             .trigger-btn {
-                padding: 1.2rem 1.45rem;
-                min-height: 94px;
-                gap: 0.75rem;
+                padding: 0.8rem 1rem;
+                min-height: 72px;
+                gap: 0.55rem;
+                border-radius: 0.65rem;
             }
             .trigger-icon svg {
-                width: 30px;
-                height: 30px;
+                width: 24px;
+                height: 24px;
             }
             .trigger-lbl {
-                font-size: 1.12rem;
+                font-size: 0.98rem;
             }
             .rating-q {
-                font-size: 1.2rem;
+                font-size: 1.25rem;
             }
             .rating-opt {
-                padding: 1rem 1.25rem;
-                min-height: 76px;
-                gap: 0.45rem;
+                padding: 0.65rem 0.85rem;
+                min-height: 56px;
+                gap: 0.35rem;
             }
             .rating-opt .r-emoji {
-                font-size: 2.1rem;
+                font-size: 1.45rem;
             }
             .rating-opt span:last-child {
-                font-size: 1.05rem;
+                font-size: 0.92rem;
             }
             .btn-submit {
-                font-size: 1.2rem;
-                min-height: 64px;
-                padding: 1.1rem 2.5rem;
+                font-size: 1rem;
+                min-height: 50px;
+                padding: 0.8rem 2rem;
+                border-radius: 0.65rem;
             }
             #submitIcon {
-                width: 22px;
-                height: 22px;
+                width: 20px;
+                height: 20px;
             }
         }
     </style>

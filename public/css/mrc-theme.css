@@ -179,6 +179,12 @@
     color: #0f172a;
 }
 
+[data-theme="light"] .mrc-input::placeholder {
+    color: #64748b;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
 [data-theme="light"] .mrc-input:hover {
     border-color: #94a3b8;
 }
@@ -471,6 +477,12 @@ body {
     border-radius: var(--radius-xl);
     outline: none;
     transition: all 0.2s ease;
+}
+
+.mrc-input::placeholder {
+    color: var(--text-subtle);
+    font-size: 0.95rem;
+    opacity: 0.9;
 }
 
 .mrc-input:hover {

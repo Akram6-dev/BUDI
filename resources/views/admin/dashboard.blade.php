@@ -232,6 +232,8 @@
 
         .search-input::placeholder {
             color: #64748b;
+            font-size: 0.95rem;
+            opacity: 0.9;
         }
 
         .select-filter {
@@ -638,7 +640,9 @@
         }
 
         [data-theme="light"] .search-input::placeholder {
-            color: #94a3b8;
+            color: #64748b;
+            font-size: 0.95rem;
+            opacity: 0.9;
         }
 
         [data-theme="light"] .select-filter {
